@@ -1,4 +1,5 @@
 data/
+arcgis_work/
 *.geojson
 *.shp
 *.shx
@@ -6,5 +7,4 @@ data/
 *.dbf
 *.sbn
 *.CPG
-*.csv
 *.docx
