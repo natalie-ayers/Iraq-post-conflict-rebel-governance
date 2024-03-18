@@ -1,4 +1,10 @@
-data/
+data/drought/gebrechorkos_etal_2023_spei/
+data/geo_boundaries/
+data/satellite_indices/evi/evi_mask_mean_max_min/evi_6mo_batches/
+data/satellite_indices/evi/evi_mask_mean_max_min/*.csv
+data/satellite_indices/evi/evi_mask_mean_max_min/*.geojson
+data/satellite_indices/evi/evi_mean_max_nomask
+data/iom/
 arcgis_work/
 *.geojson
 *.shp
