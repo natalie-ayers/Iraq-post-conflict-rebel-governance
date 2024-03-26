@@ -7,6 +7,7 @@ data/satellite_indices/evi/evi_mean_max_nomask
 data/iom/
 data/EPR/
 data/combined/
+!/data/combined/combined_data_documentation.md
 data/population/
 data/conflict/
 arcgis_work/
