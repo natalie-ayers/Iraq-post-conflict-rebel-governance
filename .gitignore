@@ -5,6 +5,10 @@ data/satellite_indices/evi/evi_mask_mean_max_min/*.csv
 data/satellite_indices/evi/evi_mask_mean_max_min/*.geojson
 data/satellite_indices/evi/evi_mean_max_nomask
 data/iom/
+data/EPR/
+data/combined/
+data/population/
+data/conflict/
 arcgis_work/
 *.geojson
 *.shp
