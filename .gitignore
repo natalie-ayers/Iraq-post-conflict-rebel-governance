@@ -19,3 +19,4 @@ arcgis_work/
 *.sbn
 *.CPG
 *.docx
+.Rproj.user

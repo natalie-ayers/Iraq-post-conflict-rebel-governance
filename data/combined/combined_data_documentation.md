@@ -57,3 +57,10 @@ NOTE: this dataset does NOT vary by month, it is static across time and varies o
 	1: if retaken_year >= 2017, 0: retaken_year not na and < 2017
 *iom_no_isil_action*: binary, based on Q1.11 WasLocationOccupied. 
 	1: No, 0: otherwise
+
+### GeoEPR Ethnicity Fields
+From GeoEPR 2021: https://icr.ethz.ch/data/epr/geoepr/
+
+*sunni_dom* : binary, if GeoEPR lists the area as containing Sunni Arabs and there are no other ethnic groups listed in the same area
+*sunni_mix* : binary, if GeoEPR lists the area as containing Sunni Arabs and another ethnic group
+*no_sunni* : binary, if GeoEPR does not list the area as containing Sunni Arabs
