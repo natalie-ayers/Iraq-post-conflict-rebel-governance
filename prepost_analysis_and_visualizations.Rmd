@@ -314,5 +314,96 @@ grid.arrange(occ_cons_postpre,attacked_cons_postpre,nrow=2,
 ```
 
 
+### Plot Post-Pre by All Dimensions
 
+```{r plot all post-pre mean EVI together}
+all_postpre_comb <- all_postpre |>
+                mutate(eth_isis_comb=paste0(iom_isis_activity," - ",sunni_status)) |>
+                filter(!is.na(iom_isis_activity))
+
+
+all_postpre_plt <- ggplot(all_postpre_comb,
+            aes(x=season,y=postpre_mean_evi,group=eth_isis_comb)) + 
+      geom_line(aes(color=eth_isis_comb)) + 
+      labs(title="Post ISIS - Pre ISIS Mean EVI by ISIS Activity and Ethnicity",
+           x = "Season", y="Post - Pre Mean EVI Difference", color="Ethnicity and ISIS Action") + 
+      scale_x_discrete(limits=c('Spring','Summer','Fall','Winter')) +
+      scale_color_manual(values=c("#0f4d1c","#28fa54","#84b582",
+                                  "#2c46c7","#2c91c7",
+                                  "#3b0505","#e62f1e","#ed9a9a")) + 
+      theme_bw() + 
+      theme(axis.text.x=element_text(angle=45,vjust=0.5))
+
+
+grid.arrange(all_postpre_plt,nrow=1,
+             bottom=textGrob("Pre-ISIS Years: 2001-2013; Post-ISIS Years: 2018-2022"))
+
+```
+
+
+```{r plot all post-pre conservative mean EVI together}
+cons_postpre_comb <- conservative_postpre |>
+                mutate(eth_isis_comb=paste0(iom_isis_activity," - ",sunni_status)) |>
+                filter(!is.na(iom_isis_activity))
+
+
+cons_postpre_plt <- ggplot(cons_postpre_comb,
+            aes(x=season,y=postpre_mean_evi,group=eth_isis_comb)) + 
+      geom_line(aes(color=eth_isis_comb)) + 
+      labs(title="Post ISIS - Pre ISIS (Conservative) Mean EVI by ISIS Activity and Ethnicity",
+           x = "Season", y="Post - Pre Mean EVI Difference", color="Ethnicity and ISIS Action") + 
+      scale_x_discrete(limits=c('Spring','Summer','Fall','Winter')) +
+      scale_color_manual(values=c("#0f4d1c","#28fa54","#84b582",
+                                  "#2c46c7","#2c91c7",
+                                  "#3b0505","#e62f1e","#ed9a9a")) + 
+      theme_bw() + 
+      theme(axis.text.x=element_text(angle=45,vjust=0.5))
+
+
+grid.arrange(cons_postpre_plt,nrow=1,
+             bottom=textGrob("Pre-ISIS Years: 2001-2002, 2012-2013; Post-ISIS Years: 2018-2022"))
+
+```
+
+
+```{r plot all post-pre mean EVI resids together}
+
+all_postpre_plt <- ggplot(all_postpre_comb,
+            aes(x=season,y=postpre_mean_evi_resids,group=eth_isis_comb)) + 
+      geom_line(aes(color=eth_isis_comb)) + 
+      labs(title="Post ISIS - Pre ISIS Mean EVI Residuals by ISIS Activity and Ethnicity",
+           x = "Season", y="Post - Pre Mean EVI Residual Difference", color="Ethnicity and ISIS Action") + 
+      scale_x_discrete(limits=c('Spring','Summer','Fall','Winter')) +
+      scale_color_manual(values=c("#0f4d1c","#28fa54","#84b582",
+                                  "#2c46c7","#2c91c7",
+                                  "#3b0505","#e62f1e","#ed9a9a")) + 
+      theme_bw() + 
+      theme(axis.text.x=element_text(angle=45,vjust=0.5))
+
+
+grid.arrange(all_postpre_plt,nrow=1,
+             bottom=textGrob("Pre-ISIS Years: 2001-2013; Post-ISIS Years: 2018-2022"))
+
+```
+
+
+```{r plot all post-pre conservative mean EVI resids together}
+
+cons_postpre_plt <- ggplot(cons_postpre_comb,
+            aes(x=season,y=postpre_mean_evi_resids,group=eth_isis_comb)) + 
+      geom_line(aes(color=eth_isis_comb)) + 
+      labs(title="Post ISIS - Pre ISIS (Conservative) Mean EVI Residuals by ISIS Activity and Ethnicity",
+           x = "Season", y="Post - Pre Mean EVI Residual Difference", color="Ethnicity and ISIS Action") + 
+      scale_x_discrete(limits=c('Spring','Summer','Fall','Winter')) +
+      scale_color_manual(values=c("#0f4d1c","#28fa54","#84b582",
+                                  "#2c46c7","#2c91c7",
+                                  "#3b0505","#e62f1e","#ed9a9a")) + 
+      theme_bw() + 
+      theme(axis.text.x=element_text(angle=45,vjust=0.5))
+
+
+grid.arrange(cons_postpre_plt,nrow=1,
+             bottom=textGrob("Pre-ISIS Years: 2001-2002, 2012-2013; Post-ISIS Years: 2018-2022"))
+
+```
 
