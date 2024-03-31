@@ -1,0 +1,318 @@
+---
+title: "Iraq Agricultural Performance Analysis"
+author: "Natalie Ayers"
+date: "`r Sys.Date()`"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+First, run the code in format_combined_data_for_analysis.R to get the dataframes used in this analysis.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(gridExtra)
+library(grid)
+```
+
+## Plot EVI Over Time by Ethnicity
+
+```{r create data for all pre-post ethnic comparison }
+mean_evi_and_resid_seasonally <- all_pre_post |>
+                            select(c(season_year,season,iom_attacked,
+                                     iom_occupied,iom_no_isil_action,
+                                     sunni_dom,sunni_mix,no_sunni,
+                                     mean_evi_scaled,mean_evi_resids)) |>
+                            mutate(iom_isis_activity=ifelse(iom_occupied==1,
+                                                            "Occupied",
+                                                      ifelse(iom_attacked==1,
+                                                             "Attacked",
+                                                      ifelse(iom_no_isil_action==1,
+                                                             "No ISIS Reported",
+                                                       NA))),
+                                   sunni_status=ifelse(sunni_dom==1,'Sunni Dominated',
+                                                 ifelse(sunni_mix==1,'Sunni Mixed',
+                                                  ifelse(no_sunni==1,'No Sunni Pop',
+                                                         NA)))) |>
+                            select(-c(iom_attacked,iom_occupied,iom_no_isil_action,
+                                     sunni_dom,sunni_mix,no_sunni)) |>
+                            group_by(season_year,season,sunni_status,iom_isis_activity) |>
+                            summarise(mean_evi_scaled=mean(mean_evi_scaled,na.rm=TRUE),
+                                      mean_evi_resids=mean(mean_evi_resids,na.rm=TRUE)) |>
+                            ungroup() 
+```
+
+```{r plot occupied mean evi}
+# consider places with reported ISIS occupation
+plt_spring_occ <- ggplot(filter(mean_evi_and_resid_seasonally,
+                                iom_isis_activity=='Occupied'&season=='Spring'),
+            aes(x=season_year,y=mean_evi_scaled,group=sunni_status)) + 
+      geom_line(aes(color=sunni_status)) + 
+      labs(title="Spring Mean EVI for ISIS Occupied Areas by Ethnic Groups",
+           x = "Season Year", y="Mean EVI", color="Sunni status") + 
+      theme_bw() + 
+      theme(axis.text.x=element_text(angle=45,vjust=0.5))
+plt_summer_occ <- ggplot(filter(mean_evi_and_resid_seasonally,
+                                iom_isis_activity=='Occupied'&season=='Summer'),
+            aes(x=season_year,y=mean_evi_scaled,group=sunni_status)) + 
+      geom_line(aes(color=sunni_status)) + 
+      labs(title="Summer Mean EVI for ISIS Occupied Areas by Ethnic Groups",
+           x = "Season Year", y="Mean EVI", color="Sunni status") + 
+      theme_bw() + 
+      theme(axis.text.x=element_text(angle=45,vjust=0.5))
+grid.arrange(plt_spring_occ,plt_summer_occ,nrow=2)
+```
+
+```{r plot occupied mean evi residuals}
+# consider places with reported ISIS occupation
+plt_spring_occ <- ggplot(filter(mean_evi_and_resid_seasonally,
+                                iom_isis_activity=='Occupied'&season=='Spring'),
+            aes(x=season_year,y=mean_evi_resids,group=sunni_status)) + 
+      geom_line(aes(color=sunni_status)) + 
+      labs(title="Spring Mean EVI Residuals for ISIS Occupied Areas by Ethnic Groups",
+           x = "Season Year", y="Mean EVI Residuals", color="Sunni status") + 
+      theme_bw() + 
+      theme(axis.text.x=element_text(angle=45,vjust=0.5))
+plt_summer_occ <- ggplot(filter(mean_evi_and_resid_seasonally,
+                                iom_isis_activity=='Occupied'&season=='Summer'),
+            aes(x=season_year,y=mean_evi_resids,group=sunni_status)) + 
+      geom_line(aes(color=sunni_status)) + 
+      labs(title="Summer Mean EVI Residuals for ISIS Occupied Areas by Ethnic Groups",
+           x = "Season Year", y="Mean EVI Residuals", color="Sunni status") + 
+      theme_bw() + 
+      theme(axis.text.x=element_text(angle=45,vjust=0.5))
+grid.arrange(plt_spring_occ,plt_summer_occ,nrow=2)
+```
+
+```{r plot attacked mean evi}
+# consider places with reported ISIS occupation
+plt_spring_occ <- ggplot(filter(mean_evi_and_resid_seasonally,
+                                iom_isis_activity=='Attacked'&season=='Spring'),
+            aes(x=season_year,y=mean_evi_scaled,group=sunni_status)) + 
+      geom_line(aes(color=sunni_status)) + 
+      labs(title="Spring Mean EVI for ISIS Attacked Areas by Ethnic Groups",
+           x = "Season Year", y="Mean EVI", color="Sunni status") + 
+      theme_bw() + 
+      theme(axis.text.x=element_text(angle=45,vjust=0.5))
+plt_summer_occ <- ggplot(filter(mean_evi_and_resid_seasonally,
+                                iom_isis_activity=='Attacked'&season=='Summer'),
+            aes(x=season_year,y=mean_evi_scaled,group=sunni_status)) + 
+      geom_line(aes(color=sunni_status)) + 
+      labs(title="Summer Mean EVI for ISIS Attacked Areas by Ethnic Groups",
+           x = "Season Year", y="Mean EVI", color="Sunni status") + 
+      theme_bw() + 
+      theme(axis.text.x=element_text(angle=45,vjust=0.5))
+grid.arrange(plt_spring_occ,plt_summer_occ,nrow=2)
+```
+
+```{r plot attacked mean evi resid}
+# consider places with reported ISIS occupation
+plt_spring_occ <- ggplot(filter(mean_evi_and_resid_seasonally,
+                                iom_isis_activity=='Attacked'&season=='Spring'),
+            aes(x=season_year,y=mean_evi_resids,group=sunni_status)) + 
+      geom_line(aes(color=sunni_status)) + 
+      labs(title="Spring Mean EVI Residuals for ISIS Attacked Areas by Ethnic Groups",
+           x = "Season Year", y="Mean EVI Residuals", color="Sunni status") + 
+      theme_bw() + 
+      theme(axis.text.x=element_text(angle=45,vjust=0.5))
+plt_summer_occ <- ggplot(filter(mean_evi_and_resid_seasonally,
+                                iom_isis_activity=='Attacked'&season=='Summer'),
+            aes(x=season_year,y=mean_evi_resids,group=sunni_status)) + 
+      geom_line(aes(color=sunni_status)) + 
+      labs(title="Summer Mean EVI Residuals for ISIS Attacked Areas by Ethnic Groups",
+           x = "Season Year", y="Mean EVI Residuals", color="Sunni status") + 
+      theme_bw() + 
+      theme(axis.text.x=element_text(angle=45,vjust=0.5))
+grid.arrange(plt_spring_occ,plt_summer_occ,nrow=2)
+```
+
+## Plot Post minus Pre EVI by Ethnic Group
+
+```{r create data for all post - pre evi}
+all_pre_evi_and_resid_seasonally <- all_pre_isis |>
+                            select(c(season,iom_attacked,
+                                     iom_occupied,iom_no_isil_action,
+                                     sunni_dom,sunni_mix,no_sunni,
+                                     mean_evi_scaled,mean_evi_resids)) |>
+                            mutate(iom_isis_activity=ifelse(iom_occupied==1,
+                                                            "Occupied",
+                                                      ifelse(iom_attacked==1,
+                                                             "Attacked",
+                                                      ifelse(iom_no_isil_action==1,
+                                                             "No ISIS Reported",
+                                                       NA))),
+                                   sunni_status=ifelse(sunni_dom==1,'Sunni Dominated',
+                                                 ifelse(sunni_mix==1,'Sunni Mixed',
+                                                  ifelse(no_sunni==1,'No Sunni Pop',
+                                                         NA)))) |>
+                            select(-c(iom_attacked,iom_occupied,iom_no_isil_action,
+                                     sunni_dom,sunni_mix,no_sunni)) |>
+                            group_by(season,sunni_status,iom_isis_activity) |>
+                            summarise(mean_evi_scaled=mean(mean_evi_scaled,na.rm=TRUE),
+                                      mean_evi_resids=mean(mean_evi_resids,na.rm=TRUE)) |>
+                            ungroup() 
+
+cons_pre_evi_and_resid_seasonally <- conservative_pre_isis |>
+                            select(c(season,iom_attacked,
+                                     iom_occupied,iom_no_isil_action,
+                                     sunni_dom,sunni_mix,no_sunni,
+                                     mean_evi_scaled,mean_evi_resids)) |>
+                            mutate(iom_isis_activity=ifelse(iom_occupied==1,
+                                                            "Occupied",
+                                                      ifelse(iom_attacked==1,
+                                                             "Attacked",
+                                                      ifelse(iom_no_isil_action==1,
+                                                             "No ISIS Reported",
+                                                       NA))),
+                                   sunni_status=ifelse(sunni_dom==1,'Sunni Dominated',
+                                                 ifelse(sunni_mix==1,'Sunni Mixed',
+                                                  ifelse(no_sunni==1,'No Sunni Pop',
+                                                         NA)))) |>
+                            select(-c(iom_attacked,iom_occupied,iom_no_isil_action,
+                                     sunni_dom,sunni_mix,no_sunni)) |>
+                            group_by(season,sunni_status,iom_isis_activity) |>
+                            summarise(mean_evi_scaled=mean(mean_evi_scaled,na.rm=TRUE),
+                                      mean_evi_resids=mean(mean_evi_resids,na.rm=TRUE)) |>
+                            ungroup() 
+
+all_post_evi_and_resid_seasonally <- post_isis |>
+                            select(c(season,iom_attacked,
+                                     iom_occupied,iom_no_isil_action,
+                                     sunni_dom,sunni_mix,no_sunni,
+                                     mean_evi_scaled,mean_evi_resids)) |>
+                            mutate(iom_isis_activity=ifelse(iom_occupied==1,
+                                                            "Occupied",
+                                                      ifelse(iom_attacked==1,
+                                                             "Attacked",
+                                                      ifelse(iom_no_isil_action==1,
+                                                             "No ISIS Reported",
+                                                       NA))),
+                                   sunni_status=ifelse(sunni_dom==1,'Sunni Dominated',
+                                                 ifelse(sunni_mix==1,'Sunni Mixed',
+                                                  ifelse(no_sunni==1,'No Sunni Pop',
+                                                         NA)))) |>
+                            select(-c(iom_attacked,iom_occupied,iom_no_isil_action,
+                                     sunni_dom,sunni_mix,no_sunni)) |>
+                            group_by(season,sunni_status,iom_isis_activity) |>
+                            summarise(mean_evi_scaled=mean(mean_evi_scaled,na.rm=TRUE),
+                                      mean_evi_resids=mean(mean_evi_resids,na.rm=TRUE)) |>
+                            ungroup() 
+
+all_postpre <- full_join(all_pre_evi_and_resid_seasonally,all_post_evi_and_resid_seasonally,
+                    by=c('season','iom_isis_activity','sunni_status')) |>
+                mutate(postpre_mean_evi = mean_evi_scaled.y-mean_evi_scaled.x,
+                       postpre_mean_evi_resids=mean_evi_resids.y-mean_evi_resids.x) 
+                
+conservative_postpre <- full_join(cons_pre_evi_and_resid_seasonally,all_post_evi_and_resid_seasonally,
+                    by=c('season','iom_isis_activity','sunni_status')) |>
+                mutate(postpre_mean_evi = mean_evi_scaled.y-mean_evi_scaled.x,
+                       postpre_mean_evi_resids=mean_evi_resids.y-mean_evi_resids.x) 
+```
+
+
+```{r plot all post-pre mean EVI by ethnicity}
+occ_all_postpre <- ggplot(filter(all_postpre,
+                                iom_isis_activity=='Occupied'),
+            aes(x=season,y=postpre_mean_evi,group=sunni_status)) + 
+      geom_line(aes(color=sunni_status)) + 
+      labs(title="Post ISIS - Pre ISIS Mean EVI for ISIS Occupied Areas by Ethnic Groups",
+           x = "Season", y="Post - Pre Mean EVI Difference", color="Sunni status") + 
+      scale_x_discrete(limits=c('Spring','Summer','Fall','Winter')) +
+      theme_bw() + 
+      theme(axis.text.x=element_text(angle=45,vjust=0.5))
+attacked_all_postpre <- ggplot(filter(all_postpre,
+                                iom_isis_activity=='Attacked'),
+            aes(x=season,y=postpre_mean_evi,group=sunni_status)) + 
+      geom_line(aes(color=sunni_status)) + 
+      labs(title="Post ISIS - Pre ISIS Mean EVI for ISIS Attacked Areas by Ethnic Groups",
+           x = "Season", y="Post - Pre Mean EVI Difference", color="Sunni status") + 
+      scale_x_discrete(limits=c('Spring','Summer','Fall','Winter')) +
+      theme_bw() + 
+      theme(axis.text.x=element_text(angle=45,vjust=0.5))
+
+grid.arrange(occ_all_postpre,attacked_all_postpre,nrow=2,
+             bottom=textGrob("Pre-ISIS Years: 2001-2013; Post-ISIS Years: 2018-2022"))
+
+```
+
+
+```{r plot conservative post-pre mean EVI by ethnicity}
+occ_cons_postpre <- ggplot(filter(conservative_postpre,
+                                iom_isis_activity=='Occupied'),
+            aes(x=season,y=postpre_mean_evi,group=sunni_status)) + 
+      geom_line(aes(color=sunni_status)) + 
+      labs(title="Post ISIS - Pre ISIS (Conservative) Mean EVI for ISIS Occupied Areas by Ethnic Groups",
+           x = "Season", y="Post - Pre Mean EVI Difference", color="Sunni status") + 
+      scale_x_discrete(limits=c('Spring','Summer','Fall','Winter')) +
+      theme_bw() + 
+      theme(axis.text.x=element_text(angle=45,vjust=0.5))
+attacked_cons_postpre <- ggplot(filter(conservative_postpre,
+                                iom_isis_activity=='Attacked'),
+            aes(x=season,y=postpre_mean_evi,group=sunni_status)) + 
+      geom_line(aes(color=sunni_status)) + 
+      labs(title="Post ISIS - Pre ISIS (Conservative) Mean EVI for ISIS Attacked Areas by Ethnic Groups",
+           x = "Season", y="Post - Pre Mean EVI Difference", color="Sunni status") + 
+      scale_x_discrete(limits=c('Spring','Summer','Fall','Winter')) +
+      theme_bw() + 
+      theme(axis.text.x=element_text(angle=45,vjust=0.5))
+
+grid.arrange(occ_cons_postpre,attacked_cons_postpre,nrow=2,
+             bottom=textGrob("Pre-ISIS Years: 2001-2002, 2012-2013; Post-ISIS Years: 2018-2022"))
+
+```
+
+
+```{r plot all post-pre mean EVI resids by ethnicity}
+occ_all_postpre <- ggplot(filter(all_postpre,
+                                iom_isis_activity=='Occupied'),
+            aes(x=season,y=postpre_mean_evi_resids,group=sunni_status)) + 
+      geom_line(aes(color=sunni_status)) + 
+      labs(title="Post ISIS - Pre ISIS Mean EVI Residuals for ISIS Occupied Areas by Ethnic Groups",
+           x = "Season", y="Post - Pre Mean EVI Residual Difference", color="Sunni status") + 
+      scale_x_discrete(limits=c('Spring','Summer','Fall','Winter')) +
+      theme_bw() + 
+      theme(axis.text.x=element_text(angle=45,vjust=0.5))
+attacked_all_postpre <- ggplot(filter(all_postpre,
+                                iom_isis_activity=='Attacked'),
+            aes(x=season,y=postpre_mean_evi_resids,group=sunni_status)) + 
+      geom_line(aes(color=sunni_status)) + 
+      labs(title="Post ISIS - Pre ISIS Mean EVI Residuals for ISIS Attacked Areas by Ethnic Groups",
+           x = "Season", y="Post - Pre Mean EVI Residual Difference", color="Sunni status") + 
+      scale_x_discrete(limits=c('Spring','Summer','Fall','Winter')) +
+      theme_bw() + 
+      theme(axis.text.x=element_text(angle=45,vjust=0.5))
+
+grid.arrange(occ_all_postpre,attacked_all_postpre,nrow=2,
+             bottom=textGrob("Pre-ISIS Years: 2001-2013; Post-ISIS Years: 2018-2022"))
+
+```
+
+```{r plot conservative post-pre mean EVI resids by ethnicity}
+occ_cons_postpre <- ggplot(filter(conservative_postpre,
+                                iom_isis_activity=='Occupied'),
+            aes(x=season,y=postpre_mean_evi_resids,group=sunni_status)) + 
+      geom_line(aes(color=sunni_status)) + 
+      labs(title="Post ISIS - Pre ISIS (Conservative) Mean EVI Residuals for ISIS Occupied Areas by Ethnic Groups",
+           x = "Season", y="Post - Pre Mean EVI Residual Difference", color="Sunni status") + 
+      scale_x_discrete(limits=c('Spring','Summer','Fall','Winter')) +
+      theme_bw() + 
+      theme(axis.text.x=element_text(angle=45,vjust=0.5))
+attacked_cons_postpre <- ggplot(filter(conservative_postpre,
+                                iom_isis_activity=='Attacked'),
+            aes(x=season,y=postpre_mean_evi_resids,group=sunni_status)) + 
+      geom_line(aes(color=sunni_status)) + 
+      labs(title="Post ISIS - Pre ISIS (Conservative) Mean EVI Residuals for ISIS Attacked Areas by Ethnic Groups",
+           x = "Season", y="Post - Pre Mean EVI Residual Difference", color="Sunni status") + 
+      scale_x_discrete(limits=c('Spring','Summer','Fall','Winter')) +
+      theme_bw() + 
+      theme(axis.text.x=element_text(angle=45,vjust=0.5))
+
+grid.arrange(occ_cons_postpre,attacked_cons_postpre,nrow=2,
+             bottom=textGrob("Pre-ISIS Years: 2001-2002, 2012-2013; Post-ISIS Years: 2018-2022"))
+
+```
+
+
+
+

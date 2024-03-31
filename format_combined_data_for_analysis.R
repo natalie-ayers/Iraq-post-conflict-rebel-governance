@@ -78,13 +78,13 @@ seasonal_data[attr(spei_max_evi_lm$residuals,which="name"),"max_evi_resids"] <- 
 
 
 conservative_pre_isis <- seasonal_data |>
-                          filter(year_num %in% c(2001,2002,2012,2013),
-                                 season %in% c('Spring','Summer'))
+                          filter(year_num %in% c(2001,2002,2012,2013))
 all_pre_isis <- seasonal_data |>
-                filter(year_num <= 2013,
-                       season %in% c('Spring','Summer'))
+                filter(year_num <= 2013)
 
 post_isis <- seasonal_data |>
-                filter(year_num >= 2018,
-                       season %in% c('Spring','Summer'))
+                filter(year_num >= 2018)
 
+conservative_pre_post <- rbind(conservative_pre_isis,post_isis)
+
+all_pre_post <- rbind(all_pre_isis,post_isis)
