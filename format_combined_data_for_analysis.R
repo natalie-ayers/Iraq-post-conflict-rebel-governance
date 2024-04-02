@@ -1,7 +1,11 @@
 library(dplyr)
 library(lubridate)
+library(geojsonio)
 
 combined_monthly_data <- read.csv('data/combined/monthly_adm3_data.csv')
+combined_monthly_data_geo <- geojson_read('data/combined/monthly_adm3_data.geojson',
+                                          what="sp")
+
 
 # remove fields that are currently unnecessary
 monthly_data_sel <- combined_monthly_data |>
@@ -74,6 +78,8 @@ spei_max_evi_lm <- lm(max_evi_scaled ~ mean_spei +
 # code suggestion: https://stackoverflow.com/questions/76046980/merge-residuals-to-data-with-missing-obs-na-exclude-not-working
 seasonal_data[attr(spei_mean_evi_lm$residuals,which="name"),"mean_evi_resids"] <- spei_mean_evi_lm$residuals
 seasonal_data[attr(spei_max_evi_lm$residuals,which="name"),"max_evi_resids"] <- spei_max_evi_lm$residuals
+
+
 
 
 
