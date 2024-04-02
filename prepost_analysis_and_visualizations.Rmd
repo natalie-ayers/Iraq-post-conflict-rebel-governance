@@ -435,6 +435,7 @@ all_years_evi_and_resid_seasonally <- seasonal_data |>
                                       mean_evi_resids=mean(mean_evi_resids,na.rm=TRUE)) |>
                             ungroup() 
 
+
 all_iraq_evi_and_resid_seasonal <- seasonal_data |>
                             select(c(season,season_year,year_num,
                                      sunni_dom,sunni_mix,no_sunni,
@@ -492,6 +493,8 @@ plt_noisis_evi <- ggplot(filter(all_years_evi_and_resid_seasonally_yrs,
 
 grid.arrange(plt_all_iraq,plt_occ_evi,plt_att_evi,plt_noisis_evi,nrow=4)
 ```
+
+
 
 
 ## Plot Maps of Areas

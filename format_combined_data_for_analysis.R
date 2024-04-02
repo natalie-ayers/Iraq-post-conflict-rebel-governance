@@ -81,8 +81,35 @@ seasonal_data[attr(spei_max_evi_lm$residuals,which="name"),"max_evi_resids"] <- 
 
 
 
+# get descriptive stats for categories
+seasonal_data |>
+  select(c(ADM3_EN,iom_attacked,
+           iom_occupied,iom_no_isil_action,
+           sunni_dom,sunni_mix,no_sunni)) |>
+  mutate(iom_isis_activity=ifelse(iom_occupied==1,
+                              "Occupied",
+                              ifelse(iom_attacked==1,
+                                     "Attacked",
+                                     ifelse(iom_no_isil_action==1,
+                                            "No ISIS Reported",
+                                            NA))),
+         sunni_status=ifelse(sunni_dom==1,'Sunni Dominated',
+                             ifelse(sunni_mix==1,'Sunni Mixed',
+                                    ifelse(no_sunni==1,'No Sunni Pop',
+                                           NA)))) |>
+  select(-c(iom_attacked,iom_occupied,iom_no_isil_action,
+            sunni_dom,sunni_mix,no_sunni)) |>
+  unique() |>
+  group_by(iom_isis_activity,sunni_status) |>
+  summarise(n_areas = n()) |>
+  ungroup() |>
+  knitr::kable()
 
 
+
+
+
+## Filter datasets for specific use cases
 conservative_pre_isis <- seasonal_data |>
                           filter(year_num %in% c(2001,2002,2012,2013))
 all_pre_isis <- seasonal_data |>
