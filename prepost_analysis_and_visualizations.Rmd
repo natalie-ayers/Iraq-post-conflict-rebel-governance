@@ -16,6 +16,7 @@ library(gridExtra)
 library(grid)
 library(broom)
 library(sp)
+library(dplyr)
 ```
 
 ## Plot EVI Over Time by Ethnicity
@@ -493,6 +494,13 @@ plt_noisis_evi <- ggplot(filter(all_years_evi_and_resid_seasonally_yrs,
 
 grid.arrange(plt_all_iraq,plt_occ_evi,plt_att_evi,plt_noisis_evi,nrow=4)
 ```
+
+
+
+
+
+
+
 
 
 

@@ -1,0 +1,516 @@
+---
+title: "EVI Distribution Comparisons"
+author: "Natalie Ayers"
+date: "`r Sys.Date()`"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+First, run the code in format_combined_data_for_analysis.R to get the dataframes used in this analysis. (sorry this is a bad way to do this..)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(gridExtra)
+library(grid)
+library(broom)
+library(sp)
+library(dplyr)
+```
+
+
+## Compare distributions of EVI 
+
+### Mean EVI 
+
+#### ISIS Occupied Areas
+```{r compare mean evi distributions pre post & during ISIS}
+seasonal_data_occ <- seasonal_data |>
+                    filter(iom_occupied==1) |>
+                    mutate(isis_timing = ifelse(year_num <= 2013,'Pre',
+                                      ifelse(year_num <= retaken_year,'During',
+                                             'Post')))
+
+plt_occ_evi_spring <- ggplot(filter(seasonal_data_occ,
+                                   season=='Spring'),
+                            aes(x=mean_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Spring EVI for ISIS Occupied Areas by Occupation Timing",
+                           x = "Mean EVI", y="Density", color="ISIS Occupation") + 
+                      theme_bw() 
+plt_occ_evi_summer <- ggplot(filter(seasonal_data_occ,
+                                   season=='Summer'),
+                            aes(x=mean_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Summer EVI for ISIS Occupied Areas by Occupation Timing",
+                           x = "Mean EVI", y="Density", color="ISIS Occupation") + 
+                      theme_bw() 
+plt_occ_evi_fall <- ggplot(filter(seasonal_data_occ,
+                                   season=='Fall'),
+                            aes(x=mean_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Fall EVI for ISIS Occupied Areas by Occupation Timing",
+                           x = "Mean EVI", y="Density", color="ISIS Occupation") + 
+                      theme_bw() 
+
+plt_occ_evi_winter <- ggplot(filter(seasonal_data_occ,
+                                   season=='Winter'),
+                            aes(x=mean_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Winter EVI for ISIS Occupied Areas by Occupation Timing",
+                           x = "Mean EVI", y="Density", color="ISIS Occupation") + 
+                      theme_bw() 
+
+grid.arrange(plt_occ_evi_spring,plt_occ_evi_summer,plt_occ_evi_fall,plt_occ_evi_winter,nrow=2,
+             bottom=textGrob("Pre-ISIS Years: 2001-2013; During-ISIS Years: 2014-IOM Retaken Year; Post-ISIS Years: IOM Retaken Year-2022"))
+
+```
+
+
+```{r compare mean resid evi dists}
+plt_occ_evi_resid_spring <- ggplot(filter(seasonal_data_occ,
+                                   season=='Spring'),
+                            aes(x=mean_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Spring EVI Residuals for ISIS Occupied Areas by Occupation Timing",
+                           x = "Mean EVI Residuals", y="Density", color="ISIS Occupation") + 
+                      theme_bw() 
+plt_occ_evi_resid_summer <- ggplot(filter(seasonal_data_occ,
+                                   season=='Summer'),
+                            aes(x=mean_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Summer EVI Residuals for ISIS Occupied Areas by Occupation Timing",
+                           x = "Mean EVI Residuals", y="Density", color="ISIS Occupation") + 
+                      theme_bw() 
+plt_occ_evi_resid_fall <- ggplot(filter(seasonal_data_occ,
+                                   season=='Fall'),
+                            aes(x=mean_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Fall EVI Residuals for ISIS Occupied Areas by Occupation Timing",
+                           x = "Mean EVI Residuals", y="Density", color="ISIS Occupation") + 
+                      theme_bw() 
+
+plt_occ_evi_resid_winter <- ggplot(filter(seasonal_data_occ,
+                                   season=='Winter'),
+                            aes(x=mean_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Winter EVI Residuals for ISIS Occupied Areas by Occupation Timing",
+                           x = "Mean EVI Residuals", y="Density", color="ISIS Occupation") + 
+                      theme_bw() 
+
+grid.arrange(plt_occ_evi_resid_spring,plt_occ_evi_resid_summer,plt_occ_evi_resid_fall,plt_occ_evi_resid_winter,nrow=2,
+             bottom=textGrob("Pre-ISIS Years: 2001-2013; During-ISIS Years: 2014-IOM Retaken Year; Post-ISIS Years: IOM Retaken Year-2022"))
+```
+
+
+#### ISIS Attacked Areas
+
+
+```{r compare mean evi distributions pre post & during ISIS attacks}
+seasonal_data_att <- seasonal_data |>
+                    filter(iom_attacked==1) |>
+                    mutate(isis_timing = ifelse(year_num <= 2013,'Pre',
+                                      ifelse(year_num <= 2017,'During',
+                                             'Post')))
+
+plt_att_evi_spring <- ggplot(filter(seasonal_data_att,
+                                   season=='Spring'),
+                            aes(x=mean_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Spring EVI for ISIS Attacked Areas by ISIS Presence",
+                           x = "Mean EVI", y="Density", color="ISIS Presence") + 
+                      theme_bw() 
+
+plt_att_evi_summer <- ggplot(filter(seasonal_data_att,
+                                   season=='Summer'),
+                            aes(x=mean_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Summer EVI for ISIS Attacked Areas by ISIS Presence",
+                           x = "Mean EVI", y="Density", color="ISIS Presence") + 
+                      theme_bw() 
+
+plt_att_evi_fall <- ggplot(filter(seasonal_data_att,
+                                   season=='Fall'),
+                            aes(x=mean_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Fall EVI for ISIS Attacked Areas by ISIS Presence",
+                           x = "Mean EVI", y="Density", color="ISIS Presence") + 
+                      theme_bw() 
+
+plt_att_evi_winter <- ggplot(filter(seasonal_data_att,
+                                   season=='Winter'),
+                            aes(x=mean_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Winter EVI for ISIS Attacked Areas by ISIS Presence",
+                           x = "Mean EVI", y="Density", color="ISIS Presence") + 
+                      theme_bw() 
+
+grid.arrange(plt_att_evi_spring,plt_att_evi_summer,plt_att_evi_fall,plt_att_evi_winter,nrow=2,
+             bottom=textGrob("Pre-ISIS Years: 2001-2013; During ISIS Years: 2014-2017, Post-ISIS Years: 2018-2022"))
+
+```
+
+```{r compare mean evi resid distributions pre post & during ISIS attacks}
+
+plt_att_evi_resid_spring <- ggplot(filter(seasonal_data_att,
+                                   season=='Spring'),
+                            aes(x=mean_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Spring EVI Residuals for ISIS Attacked Areas by ISIS Presence",
+                           x = "Mean EVI Residuals", y="Density", color="ISIS Presence") + 
+                      theme_bw() 
+
+plt_att_evi_resid_summer <- ggplot(filter(seasonal_data_att,
+                                   season=='Summer'),
+                            aes(x=mean_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Summer EVI Residuals for ISIS Attacked Areas by ISIS Presence",
+                           x = "Mean EVI Residuals", y="Density", color="ISIS Presence") + 
+                      theme_bw() 
+
+plt_att_evi_resid_fall <- ggplot(filter(seasonal_data_att,
+                                   season=='Fall'),
+                            aes(x=mean_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Fall EVI Residuals for ISIS Attacked Areas by ISIS Presence",
+                           x = "Mean EVI Residuals", y="Density", color="ISIS Presence") + 
+                      theme_bw() 
+
+plt_att_evi_resid_winter <- ggplot(filter(seasonal_data_att,
+                                   season=='Winter'),
+                            aes(x=mean_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Winter EVI Residuals for ISIS Attacked Areas by ISIS Presence",
+                           x = "Mean EVI Residuals", y="Density", color="ISIS Presence") + 
+                      theme_bw() 
+
+grid.arrange(plt_att_evi_resid_spring,plt_att_evi_resid_summer,plt_att_evi_resid_fall,plt_att_evi_resid_winter,nrow=2,
+             bottom=textGrob("Pre-ISIS Years: 2001-2013; During ISIS Years: 2014-2017, Post-ISIS Years: 2018-2022"))
+```
+
+
+#### No ISIS Activity Areas
+
+```{r compare mean evi distributions pre post & during ISIS no attack areas}
+seasonal_data_noisis <- seasonal_data |>
+                    filter(iom_no_isil_action==1) |>
+                    mutate(isis_timing = ifelse(year_num <= 2013,'Pre',
+                                      ifelse(year_num <= 2017,'During',
+                                             'Post')))
+
+plt_noisis_evi_spring <- ggplot(filter(seasonal_data_noisis,
+                                   season=='Spring'),
+                            aes(x=mean_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Spring EVI for Areas without ISIS Presence by ISIS Timing",
+                           x = "Mean EVI", y="Density", color="ISIS Timing") + 
+                      theme_bw() 
+
+plt_noisis_evi_summer <- ggplot(filter(seasonal_data_noisis,
+                                   season=='Summer'),
+                            aes(x=mean_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Summer EVI for Areas without ISIS Presence by ISIS Timing",
+                           x = "Mean EVI", y="Density", color="ISIS Timing") + 
+                      theme_bw() 
+
+plt_noisis_evi_fall <- ggplot(filter(seasonal_data_noisis,
+                                   season=='Fall'),
+                            aes(x=mean_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Fall EVI for Areas without ISIS Presence by ISIS Timing",
+                           x = "Mean EVI", y="Density", color="ISIS Timing") + 
+                      theme_bw() 
+
+plt_noisis_evi_winter <- ggplot(filter(seasonal_data_noisis,
+                                   season=='Winter'),
+                            aes(x=mean_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Winter EVI for Areas without ISIS Presence by ISIS Timing",
+                           x = "Mean EVI", y="Density", color="ISIS Timing") + 
+                      theme_bw() 
+
+grid.arrange(plt_noisis_evi_spring,plt_noisis_evi_summer,plt_noisis_evi_fall,plt_noisis_evi_winter,nrow=2,
+             bottom=textGrob("Pre-ISIS Years: 2001-2013; During ISIS Years: 2014-2017, Post-ISIS Years: 2018-2022"))
+
+```
+
+
+```{r compare mean evi distributions pre post & during ISIS no attack areas}
+
+plt_noisis_evi_resid_spring <- ggplot(filter(seasonal_data_noisis,
+                                   season=='Spring'),
+                            aes(x=mean_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Spring EVI Residuals for Areas without ISIS Presence by ISIS Timing",
+                           x = "Mean EVI Residuals", y="Density", color="ISIS Timing") + 
+                      theme_bw() 
+
+plt_noisis_evi_resid_summer <- ggplot(filter(seasonal_data_noisis,
+                                   season=='Summer'),
+                            aes(x=mean_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Summer EVI Residuals for Areas without ISIS Presence by ISIS Timing",
+                           x = "Mean EVI Residuals", y="Density", color="ISIS Timing") + 
+                      theme_bw() 
+
+plt_noisis_evi_resid_fall <- ggplot(filter(seasonal_data_noisis,
+                                   season=='Fall'),
+                            aes(x=mean_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Fall EVI Residuals for Areas without ISIS Presence by ISIS Timing",
+                           x = "Mean EVI Residuals", y="Density", color="ISIS Timing") + 
+                      theme_bw() 
+
+plt_noisis_evi_resid_winter <- ggplot(filter(seasonal_data_noisis,
+                                   season=='Winter'),
+                            aes(x=mean_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Mean Winter EVI Residuals for Areas without ISIS Presence by ISIS Timing",
+                           x = "Mean EVI Residuals", y="Density", color="ISIS Timing") + 
+                      theme_bw() 
+
+grid.arrange(plt_noisis_evi_resid_spring,plt_noisis_evi_resid_summer,plt_noisis_evi_resid_fall,plt_noisis_evi_resid_winter,nrow=2,
+             bottom=textGrob("Pre-ISIS Years: 2001-2013; During ISIS Years: 2014-2017, Post-ISIS Years: 2018-2022"))
+
+```
+
+### Max EVI 
+
+#### ISIS Occupied Areas
+```{r compare max evi distributions pre post & during ISIS}
+
+plt_occ_evi_spring_mx <- ggplot(filter(seasonal_data_occ,
+                                   season=='Spring'),
+                            aes(x=max_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Spring EVI for ISIS Occupied Areas by Occupation Timing",
+                           x = "Max EVI", y="Density", color="ISIS Occupation") + 
+                      theme_bw() 
+plt_occ_evi_summer_mx <- ggplot(filter(seasonal_data_occ,
+                                   season=='Summer'),
+                            aes(x=max_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Summer EVI for ISIS Occupied Areas by Occupation Timing",
+                           x = "Max EVI", y="Density", color="ISIS Occupation") + 
+                      theme_bw() 
+plt_occ_evi_fall_mx <- ggplot(filter(seasonal_data_occ,
+                                   season=='Fall'),
+                            aes(x=max_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Fall EVI for ISIS Occupied Areas by Occupation Timing",
+                           x = "Max EVI", y="Density", color="ISIS Occupation") + 
+                      theme_bw() 
+
+plt_occ_evi_winter_mx <- ggplot(filter(seasonal_data_occ,
+                                   season=='Winter'),
+                            aes(x=max_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Winter EVI for ISIS Occupied Areas by Occupation Timing",
+                           x = "Max EVI", y="Density", color="ISIS Occupation") + 
+                      theme_bw() 
+
+grid.arrange(plt_occ_evi_spring_mx,plt_occ_evi_summer_mx,plt_occ_evi_fall_mx,plt_occ_evi_winter_mx,nrow=2,
+             bottom=textGrob("Pre-ISIS Years: 2001-2013; During-ISIS Years: 2014-IOM Retaken Year; Post-ISIS Years: IOM Retaken Year-2022"))
+
+```
+
+
+```{r compare max resid evi dists}
+plt_occ_evi_resid_spring_mx <- ggplot(filter(seasonal_data_occ,
+                                   season=='Spring'),
+                            aes(x=max_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Spring EVI Residuals for ISIS Occupied Areas by Occupation Timing",
+                           x = "Max EVI Residuals", y="Density", color="ISIS Occupation") + 
+                      theme_bw() 
+plt_occ_evi_resid_summer_mx <- ggplot(filter(seasonal_data_occ,
+                                   season=='Summer'),
+                            aes(x=max_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Summer EVI Residuals for ISIS Occupied Areas by Occupation Timing",
+                           x = "Max EVI Residuals", y="Density", color="ISIS Occupation") + 
+                      theme_bw() 
+plt_occ_evi_resid_fall_mx <- ggplot(filter(seasonal_data_occ,
+                                   season=='Fall'),
+                            aes(x=max_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Fall EVI Residuals for ISIS Occupied Areas by Occupation Timing",
+                           x = "Max EVI Residuals", y="Density", color="ISIS Occupation") + 
+                      theme_bw() 
+
+plt_occ_evi_resid_winter_mx <- ggplot(filter(seasonal_data_occ,
+                                   season=='Winter'),
+                            aes(x=max_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Winter EVI Residuals for ISIS Occupied Areas by Occupation Timing",
+                           x = "Max EVI Residuals", y="Density", color="ISIS Occupation") + 
+                      theme_bw() 
+
+grid.arrange(plt_occ_evi_resid_spring_mx,plt_occ_evi_resid_summer_mx,plt_occ_evi_resid_fall_mx,plt_occ_evi_resid_winter_mx,nrow=2,
+             bottom=textGrob("Pre-ISIS Years: 2001-2013; During-ISIS Years: 2014-IOM Retaken Year; Post-ISIS Years: IOM Retaken Year-2022"))
+```
+
+
+#### ISIS Attacked Areas
+
+
+```{r compare max evi distributions pre post & during ISIS attacks}
+plt_att_evi_spring_mx <- ggplot(filter(seasonal_data_att,
+                                   season=='Spring'),
+                            aes(x=max_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Spring EVI for ISIS Attacked Areas by ISIS Presence",
+                           x = "Max EVI", y="Density", color="ISIS Presence") + 
+                      theme_bw() 
+
+plt_att_evi_summer_mx <- ggplot(filter(seasonal_data_att,
+                                   season=='Summer'),
+                            aes(x=max_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Summer EVI for ISIS Attacked Areas by ISIS Presence",
+                           x = "Max EVI", y="Density", color="ISIS Presence") + 
+                      theme_bw() 
+
+plt_att_evi_fall_mx <- ggplot(filter(seasonal_data_att,
+                                   season=='Fall'),
+                            aes(x=max_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Fall EVI for ISIS Attacked Areas by ISIS Presence",
+                           x = "Max EVI", y="Density", color="ISIS Presence") + 
+                      theme_bw() 
+
+plt_att_evi_winter_mx <- ggplot(filter(seasonal_data_att,
+                                   season=='Winter'),
+                            aes(x=max_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Winter EVI for ISIS Attacked Areas by ISIS Presence",
+                           x = "Max EVI", y="Density", color="ISIS Presence") + 
+                      theme_bw() 
+
+grid.arrange(plt_att_evi_spring_mx,plt_att_evi_summer_mx,plt_att_evi_fall_mx,plt_att_evi_winter_mx,nrow=2,
+             bottom=textGrob("Pre-ISIS Years: 2001-2013; During ISIS Years: 2014-2017, Post-ISIS Years: 2018-2022"))
+
+```
+
+```{r compare max evi resid distributions pre post & during ISIS attacks}
+
+plt_att_evi_resid_spring_mx <- ggplot(filter(seasonal_data_att,
+                                   season=='Spring'),
+                            aes(x=max_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Spring EVI Residuals for ISIS Attacked Areas by ISIS Presence",
+                           x = "Max EVI Residuals", y="Density", color="ISIS Presence") + 
+                      theme_bw() 
+
+plt_att_evi_resid_summer_mx <- ggplot(filter(seasonal_data_att,
+                                   season=='Summer'),
+                            aes(x=max_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Summer EVI Residuals for ISIS Attacked Areas by ISIS Presence",
+                           x = "Max EVI Residuals", y="Density", color="ISIS Presence") + 
+                      theme_bw() 
+
+plt_att_evi_resid_fall_mx <- ggplot(filter(seasonal_data_att,
+                                   season=='Fall'),
+                            aes(x=max_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Fall EVI Residuals for ISIS Attacked Areas by ISIS Presence",
+                           x = "Max EVI Residuals", y="Density", color="ISIS Presence") + 
+                      theme_bw() 
+
+plt_att_evi_resid_winter_mx <- ggplot(filter(seasonal_data_att,
+                                   season=='Winter'),
+                            aes(x=max_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Winter EVI Residuals for ISIS Attacked Areas by ISIS Presence",
+                           x = "Max EVI Residuals", y="Density", color="ISIS Presence") + 
+                      theme_bw() 
+
+grid.arrange(plt_att_evi_resid_spring_mx,plt_att_evi_resid_summer_mx,plt_att_evi_resid_fall_mx,plt_att_evi_resid_winter_mx,nrow=2,
+             bottom=textGrob("Pre-ISIS Years: 2001-2013; During ISIS Years: 2014-2017, Post-ISIS Years: 2018-2022"))
+```
+
+
+#### No ISIS Activity Areas
+
+```{r compare max evi distributions pre post & during ISIS no attack areas}
+plt_noisis_evi_spring_mx <- ggplot(filter(seasonal_data_noisis,
+                                   season=='Spring'),
+                            aes(x=max_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Spring EVI for Areas without ISIS Presence by ISIS Timing",
+                           x = "Max EVI", y="Density", color="ISIS Timing") + 
+                      theme_bw() 
+
+plt_noisis_evi_summer_mx <- ggplot(filter(seasonal_data_noisis,
+                                   season=='Summer'),
+                            aes(x=max_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Summer EVI for Areas without ISIS Presence by ISIS Timing",
+                           x = "Max EVI", y="Density", color="ISIS Timing") + 
+                      theme_bw() 
+
+plt_noisis_evi_fall_mx <- ggplot(filter(seasonal_data_noisis,
+                                   season=='Fall'),
+                            aes(x=max_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Fall EVI for Areas without ISIS Presence by ISIS Timing",
+                           x = "Max EVI", y="Density", color="ISIS Timing") + 
+                      theme_bw() 
+
+plt_noisis_evi_winter_mx <- ggplot(filter(seasonal_data_noisis,
+                                   season=='Winter'),
+                            aes(x=max_evi_scaled,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Winter EVI for Areas without ISIS Presence by ISIS Timing",
+                           x = "Max EVI", y="Density", color="ISIS Timing") + 
+                      theme_bw() 
+
+grid.arrange(plt_noisis_evi_spring_mx,plt_noisis_evi_summer_mx,plt_noisis_evi_fall_mx,plt_noisis_evi_winter_mx,nrow=2,
+             bottom=textGrob("Pre-ISIS Years: 2001-2013; During ISIS Years: 2014-2017, Post-ISIS Years: 2018-2022"))
+
+```
+
+
+```{r compare max evi distributions pre post & during ISIS no attack areas}
+
+plt_noisis_evi_resid_spring_mx <- ggplot(filter(seasonal_data_noisis,
+                                   season=='Spring'),
+                            aes(x=max_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Spring EVI Residuals for Areas without ISIS Presence by ISIS Timing",
+                           x = "Max EVI Residuals", y="Density", color="ISIS Timing") + 
+                      theme_bw() 
+
+plt_noisis_evi_resid_summer_mx <- ggplot(filter(seasonal_data_noisis,
+                                   season=='Summer'),
+                            aes(x=max_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Summer EVI Residuals for Areas without ISIS Presence by ISIS Timing",
+                           x = "Max EVI Residuals", y="Density", color="ISIS Timing") + 
+                      theme_bw() 
+
+plt_noisis_evi_resid_fall_mx <- ggplot(filter(seasonal_data_noisis,
+                                   season=='Fall'),
+                            aes(x=max_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Fall EVI Residuals for Areas without ISIS Presence by ISIS Timing",
+                           x = "Max EVI Residuals", y="Density", color="ISIS Timing") + 
+                      theme_bw() 
+
+plt_noisis_evi_resid_winter_mx <- ggplot(filter(seasonal_data_noisis,
+                                   season=='Winter'),
+                            aes(x=max_evi_resids,color=isis_timing)) + 
+                      geom_density() + 
+                      labs(title="Max Winter EVI Residuals for Areas without ISIS Presence by ISIS Timing",
+                           x = "Max EVI Residuals", y="Density", color="ISIS Timing") + 
+                      theme_bw() 
+
+grid.arrange(plt_noisis_evi_resid_spring_mx,plt_noisis_evi_resid_summer_mx,plt_noisis_evi_resid_fall_mx,plt_noisis_evi_resid_winter_mx,nrow=2,
+             bottom=textGrob("Pre-ISIS Years: 2001-2013; During ISIS Years: 2014-2017, Post-ISIS Years: 2018-2022"))
+
+```
+
