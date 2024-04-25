@@ -25,16 +25,31 @@ spei <- spei |>
         select(-c(num_drought,num_all))
 
 
+
+
+
+
 # create data aggregated by seasons, with Feb - Apr as Spring, May - Jul as Summer
 # Aug - Oct as Fall, and Nov - Jan as Winter
 seasonal_data <- monthly_data_sel |>
-                  mutate(month=as.Date(month)) |>
+                  mutate(month=as.Date(month),
+                         occ_end_month=as.Date(occ_end_month),
+                         occ_start_month=as.Date(occ_start_month)) |>
                   merge(spei,by.x=c('month','ADM3_EN'),
                         by.y=c('time','ADM3_EN'),
                         all.x=TRUE) |>
-                  mutate(month_num=month(month),
-                         year_num=year(month)) |>
-                  mutate(season=ifelse(month_num %in% c(2,3,4),
+                  mutate(isis_occ_monthly=ifelse(iom_occupied==1,
+                                                 ifelse(month>=occ_start_month&month<=occ_end_month,1,0),NA),
+                         isis_occ_status=ifelse(iom_occupied==1,
+                                                ifelse(month<occ_start_month,'Pre',
+                                                       ifelse(month>=occ_start_month&month<=occ_end_month,'During',
+                                                              ifelse(month>occ_end_month,'Post',NA))),NA),
+                         month_num=month(month),
+                         year_num=year(month),
+                         retaken_year=year(occ_end_month),
+                         occ_start_year=year(occ_start_month)) |>
+                  mutate(retaken_post_2016=ifelse(retaken_year>2016,1,0),
+                          season=ifelse(month_num %in% c(2,3,4),
                                             'Spring',
                                   ifelse(month_num %in% c(5,6,7),
                                          'Summer',
@@ -49,7 +64,8 @@ seasonal_data <- monthly_data_sel |>
                   select(-c(month,month_num)) |>
                   group_by(season_year,ADM3_EN,pop_count,pop_density,
                            disputed_area,iom_attacked,iom_occupied,
-                           retaken_year,retaken_post_2016,iom_no_isil_action,
+                           retaken_year,retaken_post_2016,occ_start_year,iom_no_isil_action,
+                           isis_occ_status,
                            sunni_dom,sunni_mix,no_sunni,Shape_Area,year_num,season) |>
                   summarise(mean_evi_scaled=mean(mean_evi_scaled),
                             max_evi_scaled=max(max_evi_scaled),
@@ -58,7 +74,8 @@ seasonal_data <- monthly_data_sel |>
                             mean_spei=mean(mean_spei),
                             max_spei=max(max_spei),
                             min_spei=min(min_spei),
-                            perc_drought_points=mean(perc_drought_points)) |>
+                            perc_drought_points=mean(perc_drought_points),
+                            isis_occ_season=max(isis_occ_monthly)) |>
                   ungroup()
 
 # run regression to predict EVI from SPEI metrics; use residuals

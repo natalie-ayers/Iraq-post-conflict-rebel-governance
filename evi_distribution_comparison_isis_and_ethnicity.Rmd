@@ -1,0 +1,230 @@
+---
+title: "evi_distribution_isis_and_relig"
+author: "Natalie Ayers"
+date: "`r Sys.Date()`"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+First, run the code in format_combined_data_for_analysis.R to get the dataframes used in this analysis. (sorry this is a bad way to do this..)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(gridExtra)
+library(grid)
+library(broom)
+library(sp)
+library(dplyr)
+```
+
+## Compare distributions of EVI by Occupation and Religion
+
+### Mean EVI 
+
+#### ISIS Occupied Areas
+```{r compare mean evi distributions pre post & during ISIS}
+seasonal_data_occ_relig <- seasonal_data |>
+                     filter(!is.na(isis_occ_status)) |>
+                     mutate(sunni_status=ifelse(sunni_dom==1,'Sunni Dominated',
+                             ifelse(sunni_mix==1,'Sunni Mixed',
+                                    ifelse(no_sunni==1,'No Sunni Pop',
+                                           NA)))) |>
+                     mutate(occ_and_relig = paste0(sunni_status," - ",isis_occ_status))
+
+plt_occ_rel_evi_spring <- ggplot(filter(seasonal_data_occ_relig,
+                                   season=='Spring'),
+                            aes(x=mean_evi_scaled,color=occ_and_relig)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#290AC1","#2843AC",
+                            "#26D176","#72E940","#BFE515",
+                            "#FA900F","#F95E10","#F02015")) + 
+                      labs(title="Mean Spring EVI for ISIS Occupied Areas by Occupation Timing and Sunni Status",
+                           x = "Mean EVI", y="Density", color="ISIS Occupation and Sunni Status") + 
+                      theme_bw() 
+plt_occ_rel_evi_summer <- ggplot(filter(seasonal_data_occ_relig,
+                                   season=='Summer'),
+                            aes(x=mean_evi_scaled,color=occ_and_relig)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#290AC1","#2843AC","#277C96",
+                            "#26D176","#72E940","#BFE515",
+                            "#FA900F","#F95E10","#F02015")) + 
+
+                      labs(title="Mean Summer EVI for ISIS Occupied Areas by Occupation Timing and Sunni Status",
+                           x = "Mean EVI", y="Density", color="ISIS Occupation and Sunni Status") + 
+                      theme_bw() 
+plt_occ_rel_evi_fall <- ggplot(filter(seasonal_data_occ_relig,
+                                   season=='Fall'),
+                            aes(x=mean_evi_scaled,color=occ_and_relig)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#290AC1","#2843AC","#277C96",
+                            "#26D176","#72E940","#BFE515",
+                            "#FA900F","#F95E10","#F02015")) + 
+                      labs(title="Mean Fall EVI for ISIS Occupied Areas by Occupation Timing and Sunni Status",
+                           x = "Mean EVI", y="Density", color="ISIS Occupation and Sunni Status") + 
+                      theme_bw() 
+
+plt_occ_rel_evi_winter <- ggplot(filter(seasonal_data_occ_relig,
+                                   season=='Winter'),
+                            aes(x=mean_evi_scaled,color=occ_and_relig)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#290AC1","#2843AC","#277C96",
+                            "#26D176","#72E940","#BFE515",
+                            "#FA900F","#F95E10","#F02015")) + 
+                      labs(title="Mean Winter EVI for ISIS Occupied Areas by Occupation Timing and Sunni Status",
+                           x = "Mean EVI", y="Density", color="ISIS Occupation and Sunni Status") + 
+                      theme_bw() 
+
+grid.arrange(plt_occ_rel_evi_spring,plt_occ_rel_evi_summer,plt_occ_rel_evi_fall,plt_occ_rel_evi_winter,nrow=2,
+             bottom=textGrob("ISIS Occupation Years Collected Manually based on IOM Occupation Reports"))
+
+```
+
+
+```{r compare mean resid evi dists}
+plt_occ_rel_evi_resid_spring <- ggplot(filter(seasonal_data_occ_relig,
+                                   season=='Spring'),
+                            aes(x=mean_evi_resids,color=occ_and_relig)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#290AC1","#2843AC",
+                            "#26D176","#72E940","#BFE515",
+                            "#FA900F","#F95E10","#F02015")) +  
+                      labs(title="Mean Spring EVI Residuals for ISIS Occupied Areas by Occupation Timing and Sunni Status",
+                           x = "Mean EVI Residuals", y="Density", color="ISIS Occupation and Sunni Status") + 
+                      theme_bw() 
+plt_occ_rel_evi_resid_summer <- ggplot(filter(seasonal_data_occ_relig,
+                                   season=='Summer'),
+                            aes(x=mean_evi_resids,color=occ_and_relig)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#290AC1","#2843AC","#277C96",
+                            "#26D176","#72E940","#BFE515",
+                            "#FA900F","#F95E10","#F02015")) + 
+                      labs(title="Mean Summer EVI Residuals for ISIS Occupied Areas by Occupation Timing and Sunni Status",
+                           x = "Mean EVI Residuals", y="Density", color="ISIS Occupation and Sunni Status") + 
+                      theme_bw() 
+plt_occ_rel_evi_resid_fall <- ggplot(filter(seasonal_data_occ_relig,
+                                   season=='Fall'),
+                            aes(x=mean_evi_resids,color=occ_and_relig)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#290AC1","#2843AC","#277C96",
+                            "#26D176","#72E940","#BFE515",
+                            "#FA900F","#F95E10","#F02015")) + 
+                      labs(title="Mean Fall EVI Residuals for ISIS Occupied Areas by Occupation Timing and Sunni Status",
+                           x = "Mean EVI Residuals", y="Density", color="ISIS Occupation and Sunni Status") + 
+                      theme_bw() 
+
+plt_occ_rel_evi_resid_winter <- ggplot(filter(seasonal_data_occ_relig,
+                                   season=='Winter'),
+                            aes(x=mean_evi_resids,color=occ_and_relig)) + 
+                      geom_density()+ 
+                      scale_color_manual(values=c("#290AC1","#2843AC","#277C96",
+                            "#26D176","#72E940","#BFE515",
+                            "#FA900F","#F95E10","#F02015")) + 
+                      labs(title="Mean Winter EVI Residuals for ISIS Occupied Areas by Occupation Timing and Sunni Status",
+                           x = "Mean EVI Residuals", y="Density", color="ISIS Occupation and Sunni Status") + 
+                      theme_bw() 
+
+grid.arrange(plt_occ_rel_evi_resid_spring,plt_occ_rel_evi_resid_summer,plt_occ_rel_evi_resid_fall,plt_occ_rel_evi_resid_winter,nrow=2,
+             bottom=textGrob("ISIS Occupation Years Collected Manually based on IOM Occupation Reports"))
+```
+
+### Max EVI 
+
+#### ISIS Occupied Areas
+```{r compare max evi distributions pre post & during ISIS}
+
+plt_occ_rel_evi_spring_mx <- ggplot(filter(seasonal_data_occ_relig,
+                                   season=='Spring'),
+                            aes(x=max_evi_scaled,color=occ_and_relig)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#290AC1","#2843AC",
+                            "#26D176","#72E940","#BFE515",
+                            "#FA900F","#F95E10","#F02015")) + 
+                      labs(title="Max Spring EVI for ISIS Occupied Areas by Occupation Timing and Sunni Status",
+                           x = "Max EVI", y="Density", color="ISIS Occupation and Sunni Status") + 
+                      theme_bw() 
+plt_occ_rel_evi_summer_mx <- ggplot(filter(seasonal_data_occ_relig,
+                                   season=='Summer'),
+                            aes(x=max_evi_scaled,color=occ_and_relig)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#290AC1","#2843AC","#277C96",
+                            "#26D176","#72E940","#BFE515",
+                            "#FA900F","#F95E10","#F02015")) +  
+                      labs(title="Max Summer EVI for ISIS Occupied Areas by Occupation Timing and Sunni Status",
+                           x = "Max EVI", y="Density", color="ISIS Occupation and Sunni Status") + 
+                      theme_bw() 
+plt_occ_rel_evi_fall_mx <- ggplot(filter(seasonal_data_occ_relig,
+                                   season=='Fall'),
+                            aes(x=max_evi_scaled,color=occ_and_relig)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#290AC1","#2843AC","#277C96",
+                            "#26D176","#72E940","#BFE515",
+                            "#FA900F","#F95E10","#F02015")) + 
+                      labs(title="Max Fall EVI for ISIS Occupied Areas by Occupation Timing and Sunni Status",
+                           x = "Max EVI", y="Density", color="ISIS Occupation and Sunni Status") + 
+                      theme_bw() 
+
+plt_occ_rel_evi_winter_mx <- ggplot(filter(seasonal_data_occ_relig,
+                                   season=='Winter'),
+                            aes(x=max_evi_scaled,color=occ_and_relig)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#290AC1","#2843AC","#277C96",
+                            "#26D176","#72E940","#BFE515",
+                            "#FA900F","#F95E10","#F02015")) + 
+                      labs(title="Max Winter EVI for ISIS Occupied Areas by Occupation Timing and Sunni Status",
+                           x = "Max EVI", y="Density", color="ISIS Occupation and Sunni Status") + 
+                      theme_bw() 
+
+grid.arrange(plt_occ_rel_evi_spring_mx,plt_occ_rel_evi_summer_mx,plt_occ_rel_evi_fall_mx,plt_occ_rel_evi_winter_mx,nrow=2,
+             bottom=textGrob("ISIS Occupation Years Collected Manually based on IOM Occupation Reports"))
+
+```
+
+
+```{r compare max resid evi dists}
+plt_occ_rel_evi_resid_spring_mx <- ggplot(filter(seasonal_data_occ_relig,
+                                   season=='Spring'),
+                            aes(x=max_evi_resids,color=occ_and_relig)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#290AC1","#2843AC",
+                            "#26D176","#72E940","#BFE515",
+                            "#FA900F","#F95E10","#F02015")) +  
+                      labs(title="Max Spring EVI Residuals for ISIS Occupied Areas by Occupation Timing and Sunni Status",
+                           x = "Max EVI Residuals", y="Density", color="ISIS Occupation and Sunni Status") + 
+                      theme_bw() 
+plt_occ_rel_evi_resid_summer_mx <- ggplot(filter(seasonal_data_occ_relig,
+                                   season=='Summer'),
+                            aes(x=max_evi_resids,color=occ_and_relig)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#290AC1","#2843AC","#277C96",
+                            "#26D176","#72E940","#BFE515",
+                            "#FA900F","#F95E10","#F02015")) + 
+                      labs(title="Max Summer EVI Residuals for ISIS Occupied Areas by Occupation Timing and Sunni Status",
+                           x = "Max EVI Residuals", y="Density", color="ISIS Occupation and Sunni Status") + 
+                      theme_bw() 
+plt_occ_rel_evi_resid_fall_mx <- ggplot(filter(seasonal_data_occ_relig,
+                                   season=='Fall'),
+                            aes(x=max_evi_resids,color=occ_and_relig)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#290AC1","#2843AC","#277C96",
+                            "#26D176","#72E940","#BFE515",
+                            "#FA900F","#F95E10","#F02015")) +  
+                      labs(title="Max Fall EVI Residuals for ISIS Occupied Areas by Occupation Timing and Sunni Status",
+                           x = "Max EVI Residuals", y="Density", color="ISIS Occupation and Sunni Status") + 
+                      theme_bw() 
+
+plt_occ_rel_evi_resid_winter_mx <- ggplot(filter(seasonal_data_occ_relig,
+                                   season=='Winter'),
+                            aes(x=max_evi_resids,color=occ_and_relig)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#290AC1","#2843AC","#277C96",
+                            "#26D176","#72E940","#BFE515",
+                            "#FA900F","#F95E10","#F02015")) +  
+                      labs(title="Max Winter EVI Residuals for ISIS Occupied Areas by Occupation Timing and Sunni Status",
+                           x = "Max EVI Residuals", y="Density", color="ISIS Occupation and Sunni Status") + 
+                      theme_bw() 
+
+grid.arrange(plt_occ_rel_evi_resid_spring_mx,plt_occ_rel_evi_resid_summer_mx,plt_occ_rel_evi_resid_fall_mx,plt_occ_rel_evi_resid_winter_mx,nrow=2,
+             bottom=textGrob("ISIS Occupation Years Collected Manually based on IOM Occupation Reports"))
+```
