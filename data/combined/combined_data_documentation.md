@@ -21,6 +21,23 @@ Date range: 2001-01-01 to 2022-12-31
 *mean_evi*: the mean EVI recorded over given Adm3 area
 *mean_evi_scaled*: the mean evi recorded over given Adm3 area, scaled by the scale factor 0.0001 provided by MODIS to obtain EVI in range of -1 to 1
 
+
+### UCDP Conflict Events
+https://ucdp.uu.se/downloads/ged/ged231.pdf
+UCDP Conflict Events, aggregated to the month-admin 3 level by ISIS affiliation and location precision
+
+*ucdp_nonisis_events_adm3prec* : UCDP conflict events with where_prec of 1 or 2, meaning precise to the admin 3 level, and where 'IS' was not the actor on either side
+*ucdp_isis_events_adm3prec* : UCDP conflict events with where_prec of 1 or 2, meaning precise to the admin 3 level, and where 'IS' was the actor on one side of the conflict
+*ucdp_all_events_adm3prec* : UCDP conflict events with where_prec of 1 or 2, meaning precise to the admin 3 level, including events by all actors
+*ucdp_nonisis_events_adm2prec* : UCDP conflict events with where_prec of 1, 2, or 3 meaning precise to the admin 2 level, and where 'IS' was not the actor on either side
+*ucdp_isis_events_adm2prec* : UCDP conflict events with where_prec of 1, 2, or 3, meaning precise to the admin 2 level, and where 'IS' was the actor on one side of the conflict
+*ucdp_all_events_adm2prec* : UCDP conflict events with where_prec of 1, 2, or 3, meaning precise to the admin 2 level, including events by all actors
+*ucdp_nonisis_events_adm1prec* : UCDP conflict events with where_prec of 1, 2, 3, or 4, meaning precise to the admin 1 level, and where 'IS' was not the actor on either side
+*ucdp_isis_events_adm1prec* : UCDP conflict events with where_prec of 1, 2, 3, or 4, meaning precise to the admin 1 level, and where 'IS' was the actor on one side of the conflict
+*ucdp_all_events_adm1prec* : UCDP conflict events with where_prec of 1, 2, 3, or 4, meaning precise to the admin 1 level, including events by all actors
+
+
+
 ### xSub Conflict Events
 https://cross-sub.org/about/variables-included
 xSub data combined by de-duplicating events within 1km and 2 day windows
@@ -57,6 +74,12 @@ NOTE: this dataset does NOT vary by month, it is static across time and varies o
 	1: if retaken_year >= 2017, 0: retaken_year not na and < 2017
 *iom_no_isil_action*: binary, based on Q1.11 WasLocationOccupied. 
 	1: No, 0: otherwise
+
+
+### Blair and Nihad Occupation Dates
+*occ_start_month*: month in which ISIS occupation began, coded to last day of month to match other dates in dataset
+*occ_end_month* : month in which ISIS occupation ended, coded to last day of month to match other dates in dataset
+*occ_length_mon* : number of months of ISIS occupation
 
 ### GeoEPR Ethnicity Fields
 From GeoEPR 2021: https://icr.ethz.ch/data/epr/geoepr/
