@@ -1,0 +1,39 @@
+---
+title: "evi_distributions_occ_length"
+author: "Natalie Ayers"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+First, run the code in format_combined_data_for_analysis.R to get the dataframes used in this analysis. (sorry this is a bad way to do this..)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(gridExtra)
+library(grid)
+library(broom)
+library(sp)
+library(dplyr)
+```
+
+```{r examine occupation length dist}
+seasonal_data_occ_len <- seasonal_data |>
+                     filter(!is.na(isis_occ_status)) |>
+                     mutate(sunni_status=ifelse(sunni_dom==1,'Sunni Dominated',
+                             ifelse(sunni_mix==1,'Sunni Mixed',
+                                    ifelse(no_sunni==1,'No Sunni Pop',
+                                           NA)))) |>
+                    filter(occ_length_mon > 0) |>
+                    select(occ_length_mon,sunni_status,ADM3_EN) |>
+                    unique()
+
+
+ggplot(seasonal_data_occ_len,
+            aes(x=occ_length_mon)) + 
+      geom_histogram() + 
+      labs(title="Distribution of ISIS Occupation Lengths (Months)",
+           x = "Length of ISIS Occupation (Months)", y="Count") + 
+      theme_bw() 
+
+```

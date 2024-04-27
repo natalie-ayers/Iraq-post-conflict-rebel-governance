@@ -13,7 +13,7 @@ monthly_data_sel <- combined_monthly_data |>
                                 'ADM1_EN','ADM1_AR','ADM1_PCODE',
                                 'ADM3_AR','ADM3_PCODE','isil_ingroup_prior',
                                 'isil_ingroup_curr','mean_evi','max_evi',
-                                'ACTION_PRT'))
+                                'ACTION_PRT','ACTION_IND', 'ACTION_DIR'))
 
 # include spei to allow for residual calculations
 spei <- read.csv('data/drought/gebrechorkos_etal_2023_spei/spei_sums/CHIRPS_GLEAM_06_spei_sums.csv')
@@ -64,19 +64,34 @@ seasonal_data <- monthly_data_sel |>
                   select(-c(month,month_num)) |>
                   group_by(season_year,ADM3_EN,pop_count,pop_density,
                            disputed_area,iom_attacked,iom_occupied,
-                           retaken_year,retaken_post_2016,occ_start_year,iom_no_isil_action,
-                           isis_occ_status,
+                           retaken_year,retaken_post_2016,occ_start_year,
+                           occ_length_mon,
+                           iom_no_isil_action,
                            sunni_dom,sunni_mix,no_sunni,Shape_Area,year_num,season) |>
                   summarise(mean_evi_scaled=mean(mean_evi_scaled),
                             max_evi_scaled=max(max_evi_scaled),
-                            ACTION_IND=sum(ACTION_IND),
-                            ACTION_DIR=sum(ACTION_DIR),
+                            ucdp_nonisis_events_adm1prec = sum(ucdp_nonisis_events_adm1prec,na.rm=TRUE),
+                            ucdp_isis_events_adm1prec = sum(ucdp_isis_events_adm1prec,na.rm=TRUE),
+                            ucdp_all_events_adm1prec = sum(ucdp_all_events_adm1prec,na.rm=TRUE),
+                            ucdp_nonisis_events_adm2prec = sum(ucdp_nonisis_events_adm2prec,na.rm=TRUE),
+                            ucdp_isis_events_adm2prec = sum(ucdp_isis_events_adm2prec,na.rm=TRUE),
+                            ucdp_all_events_adm2prec = sum(ucdp_all_events_adm2prec,na.rm=TRUE),
+                            ucdp_nonisis_events_adm3prec = sum(ucdp_nonisis_events_adm3prec,na.rm=TRUE),
+                            ucdp_isis_events_adm3prec = sum(ucdp_isis_events_adm3prec,na.rm=TRUE),
+                            ucdp_all_events_adm3prec = sum(ucdp_all_events_adm3prec,na.rm=TRUE),
                             mean_spei=mean(mean_spei),
                             max_spei=max(max_spei),
                             min_spei=min(min_spei),
                             perc_drought_points=mean(perc_drought_points),
-                            isis_occ_season=max(isis_occ_monthly)) |>
-                  ungroup()
+                            isis_occ_season=max(isis_occ_monthly),
+                            isis_occ_status = paste(isis_occ_status, collapse="-")) |>
+                  ungroup() |>
+                  mutate(isis_occ_status = ifelse(grepl("During",isis_occ_status),
+                                                        'During',
+                                            ifelse(grepl('Post',isis_occ_status),
+                                                   'Post',
+                                            ifelse(grepl('Pre',isis_occ_status),
+                                                   'Pre',NA))))
 
 # run regression to predict EVI from SPEI metrics; use residuals
 # as one (rough) measure of EVI that diverges from what would be expected
@@ -100,23 +115,25 @@ seasonal_data[attr(spei_max_evi_lm$residuals,which="name"),"max_evi_resids"] <- 
 
 # get descriptive stats for categories
 seasonal_data |>
-  select(c(ADM3_EN,iom_attacked,
-           iom_occupied,iom_no_isil_action,
+  select(c(ADM3_EN,ucdp_isis_events_adm1prec,
+           isis_occ_season,ucdp_isis_events_adm3prec,
            sunni_dom,sunni_mix,no_sunni)) |>
-  mutate(iom_isis_activity=ifelse(iom_occupied==1,
-                              "Occupied",
-                              ifelse(iom_attacked==1,
-                                     "Attacked",
-                                     ifelse(iom_no_isil_action==1,
-                                            "No ISIS Reported",
-                                            NA))),
-         sunni_status=ifelse(sunni_dom==1,'Sunni Dominated',
+  mutate(sunni_status=ifelse(sunni_dom==1,'Sunni Dominated',
                              ifelse(sunni_mix==1,'Sunni Mixed',
                                     ifelse(no_sunni==1,'No Sunni Pop',
                                            NA)))) |>
-  select(-c(iom_attacked,iom_occupied,iom_no_isil_action,
-            sunni_dom,sunni_mix,no_sunni)) |>
-  unique() |>
+  select(-c(sunni_dom,sunni_mix,no_sunni)) |>
+  group_by(ADM3_EN,sunni_status) |>
+  summarise(isis_occ_season = max(isis_occ_season,na.rm=TRUE),
+            isis_attacks_adm3 = max(ucdp_isis_events_adm3prec,na.rm=TRUE),
+            isis_attacks_adm1 = max(ucdp_isis_events_adm1prec,na.rm=TRUE)) |>
+  mutate(iom_isis_activity=ifelse(isis_occ_season > 0,
+                                  "Occupied",
+                                  ifelse(isis_attacks_adm3 > 0,
+                                         "Attacked - Adm3 Prec",
+                                         ifelse(isis_attacks_adm1 > 0,
+                                                "Attacked - Adm1 Prec",
+                                                'No ISIS Activity')))) |>
   group_by(iom_isis_activity,sunni_status) |>
   summarise(n_areas = n()) |>
   ungroup() |>
