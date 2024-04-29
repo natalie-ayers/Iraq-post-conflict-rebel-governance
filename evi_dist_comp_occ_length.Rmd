@@ -3,6 +3,8 @@ title: "evi_distributions_occ_length"
 author: "Natalie Ayers"
 date: "`r Sys.Date()`"
 output: pdf_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 First, run the code in format_combined_data_for_analysis.R to get the dataframes used in this analysis. (sorry this is a bad way to do this..)
@@ -24,7 +26,6 @@ seasonal_data_occ_len <- seasonal_data |>
                              ifelse(sunni_mix==1,'Sunni Mixed',
                                     ifelse(no_sunni==1,'No Sunni Pop',
                                            NA)))) |>
-                    filter(occ_length_mon > 0) |>
                     select(occ_length_mon,sunni_status,ADM3_EN) |>
                     unique()
 
@@ -36,4 +37,215 @@ ggplot(seasonal_data_occ_len,
            x = "Length of ISIS Occupation (Months)", y="Count") + 
       theme_bw() 
 
+```
+
+```{r occ length datasets}
+occlen_extremes_relig <- seasonal_data |>
+                     filter(!is.na(isis_occ_status)) |>
+                     mutate(sunni_status=ifelse(sunni_dom==1,'Sunni Dominated',
+                             ifelse(sunni_mix==1,'Sunni Mixed',
+                                    ifelse(no_sunni==1,'No Sunni Pop',
+                                           NA))),
+                            occ_len_cat = ifelse(occ_length_mon<=12, "Short",
+                                                 ifelse(occ_length_mon>=35,"Long",
+                                                        "Mid"))) |>
+                     mutate(occlen_and_relig = paste0(sunni_status," - ",occ_len_cat),
+                            occlen_and_timing = paste0(occ_len_cat, " - " ,isis_occ_status))
+
+occlen_extremes_relig_filt <- occlen_extremes_relig |>
+                                filter(occ_len_cat %in% c('Long','Short')) |>
+                                filter(isis_occ_status %in% c('Pre','Post'))
+
+```
+
+```{r compare mean evi dists occ length}
+plt_occ_len_spring <- ggplot(filter(occlen_extremes_relig_filt,
+                                   season=='Spring'),
+                            aes(x=mean_evi_scaled,color=occlen_and_timing)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#F02015","#FA900F",
+                                                  "#030ffc","#05f5ed")) + 
+                      labs(title="Mean Spring EVI for ISIS Occupied Areas by Occupation Length and Timing",
+                           x = "Mean EVI", y="Density", color="ISIS Occupation Length - Timing") + 
+                      theme_bw() 
+plt_occ_len_summer <- ggplot(filter(occlen_extremes_relig_filt,
+                                   season=='Summer'),
+                            aes(x=mean_evi_scaled,color=occlen_and_timing)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#F02015","#FA900F",
+                                                  "#030ffc","#05f5ed")) + 
+                      labs(title="Mean Summer EVI for ISIS Occupied Areas by Occupation Length and Timing",
+                           x = "Mean EVI", y="Density", color="ISIS Occupation Length - Timing") + 
+                      theme_bw() 
+plt_occ_len_fall <- ggplot(filter(occlen_extremes_relig_filt,
+                                   season=='Fall'),
+                            aes(x=mean_evi_scaled,color=occlen_and_timing)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#F02015","#FA900F",
+                                                  "#030ffc","#05f5ed")) + 
+                      labs(title="Mean Fall EVI for ISIS Occupied Areas by Occupation Length and Timing",
+                           x = "Mean EVI", y="Density", color="ISIS Occupation Length - Timing") + 
+                      theme_bw() 
+
+plt_occ_len_winter <- ggplot(filter(occlen_extremes_relig_filt,
+                                   season=='Winter'),
+                            aes(x=mean_evi_scaled,color=occlen_and_timing)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#F02015","#FA900F",
+                                                  "#030ffc","#05f5ed")) + 
+                      labs(title="Mean Winter EVI for ISIS Occupied Areas by Occupation Length and Timing",
+                           x = "Mean EVI", y="Density", color="ISIS Occupation Length - Timing") + 
+                      theme_bw() 
+
+fin_plots <- arrangeGrob(plt_occ_len_spring,plt_occ_len_summer,plt_occ_len_fall,plt_occ_len_winter,nrow=2,
+             bottom=textGrob("ISIS Occupation Years Collected Manually based on IOM Occupation Reports; Long Occupation is >= 35 months, Short Occupation is <= 12 months"))
+
+
+img_file <- './data/data_visualizations/mean_season_evi_dists_occlen.png'
+ggsave(img_file,fin_plots, width=24, height=10, dpi=400)
+```
+
+```{r compare mean resid evi dists occ length}
+plt_resid_occ_len_spring <- ggplot(filter(occlen_extremes_relig_filt,
+                                   season=='Spring'),
+                            aes(x=mean_evi_resids,color=occlen_and_timing)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#F02015","#FA900F",
+                                                  "#030ffc","#05f5ed")) + 
+                      labs(title="Mean Spring EVI Residuals for ISIS Occupied Areas by Occupation Length and Timing",
+                           x = "Mean EVI Resids", y="Density", color="ISIS Occupation Length - Timing") + 
+                      theme_bw() 
+plt_resid_occ_len_summer <- ggplot(filter(occlen_extremes_relig_filt,
+                                   season=='Summer'),
+                            aes(x=mean_evi_resids,color=occlen_and_timing)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#F02015","#FA900F",
+                                                  "#030ffc","#05f5ed")) + 
+                      labs(title="Mean Summer EVI Residuals for ISIS Occupied Areas by Occupation Length and Timing",
+                           x = "Mean EVI Resids", y="Density", color="ISIS Occupation Length - Timing") + 
+                      theme_bw() 
+plt_resid_occ_len_fall <- ggplot(filter(occlen_extremes_relig_filt,
+                                   season=='Fall'),
+                            aes(x=mean_evi_resids,color=occlen_and_timing)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#F02015","#FA900F",
+                                                  "#030ffc","#05f5ed")) + 
+                      labs(title="Mean Fall EVI Residuals for ISIS Occupied Areas by Occupation Length and Timing",
+                           x = "Mean EVI Resids", y="Density", color="ISIS Occupation Length - Timing") + 
+                      theme_bw() 
+
+plt_resid_occ_len_winter <- ggplot(filter(occlen_extremes_relig_filt,
+                                   season=='Winter'),
+                            aes(x=mean_evi_resids,color=occlen_and_timing)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#F02015","#FA900F",
+                                                  "#030ffc","#05f5ed")) + 
+                      labs(title="Mean Winter EVI Residuals for ISIS Occupied Areas by Occupation Length and Timing",
+                           x = "Mean EVI Resids", y="Density", color="ISIS Occupation Length - Timing") + 
+                      theme_bw() 
+
+fin_plots <- arrangeGrob(plt_resid_occ_len_spring,plt_resid_occ_len_summer,plt_resid_occ_len_fall,plt_resid_occ_len_winter,nrow=2,
+             bottom=textGrob("ISIS Occupation Years Collected Manually based on IOM Occupation Reports; Long Occupation is >= 35 months, Short Occupation is <= 12 months"))
+
+
+img_file <- './data/data_visualizations/mean_season_evi_resid_dists_occlen.png'
+ggsave(img_file,fin_plots, width=24, height=10, dpi=400)
+
+```
+
+
+```{r compare max resid evi dists occ length}
+plt_max_resid_occ_len_spring <- ggplot(filter(occlen_extremes_relig_filt,
+                                   season=='Spring'),
+                            aes(x=mean_evi_resids,color=occlen_and_timing)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#F02015","#FA900F",
+                                                  "#030ffc","#05f5ed")) + 
+                      labs(title="Max Spring EVI Residuals for ISIS Occupied Areas by Occupation Length and Timing",
+                           x = "Max EVI Resids", y="Density", color="ISIS Occupation Length - Timing") + 
+                      theme_bw() 
+plt_max_resid_occ_len_summer <- ggplot(filter(occlen_extremes_relig_filt,
+                                   season=='Summer'),
+                            aes(x=mean_evi_resids,color=occlen_and_timing)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#F02015","#FA900F",
+                                                  "#030ffc","#05f5ed")) + 
+                      labs(title="Max Summer EVI Residuals for ISIS Occupied Areas by Occupation Length and Timing",
+                           x = "Max EVI Resids", y="Density", color="ISIS Occupation Length - Timing") + 
+                      theme_bw() 
+plt_max_resid_occ_len_fall <- ggplot(filter(occlen_extremes_relig_filt,
+                                   season=='Fall'),
+                            aes(x=mean_evi_resids,color=occlen_and_timing)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#F02015","#FA900F",
+                                                  "#030ffc","#05f5ed")) + 
+                      labs(title="Max Fall EVI Residuals for ISIS Occupied Areas by Occupation Length and Timing",
+                           x = "Max EVI Resids", y="Density", color="ISIS Occupation Length - Timing") + 
+                      theme_bw() 
+
+plt_max_resid_occ_len_winter <- ggplot(filter(occlen_extremes_relig_filt,
+                                   season=='Winter'),
+                            aes(x=mean_evi_resids,color=occlen_and_timing)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#F02015","#FA900F",
+                                                  "#030ffc","#05f5ed")) + 
+                      labs(title="Max Winter EVI Residuals for ISIS Occupied Areas by Occupation Length and Timing",
+                           x = "Max EVI Resids", y="Density", color="ISIS Occupation Length - Timing") + 
+                      theme_bw() 
+
+fin_plots <- arrangeGrob(plt_max_resid_occ_len_spring,plt_max_resid_occ_len_summer,plt_max_resid_occ_len_fall,plt_max_resid_occ_len_winter,nrow=2,
+             bottom=textGrob("ISIS Occupation Years Collected Manually based on IOM Occupation Reports; Long Occupation is >= 35 months, Short Occupation is <= 12 months"))
+
+
+img_file <- './data/data_visualizations/max_season_evi_resid_dists_occlen.png'
+ggsave(img_file,fin_plots, width=24, height=10, dpi=400)
+
+```
+
+
+```{r compare max resid evi dists occ length}
+plt_max_occ_len_spring <- ggplot(filter(occlen_extremes_relig_filt,
+                                   season=='Spring'),
+                            aes(x=max_evi_scaled,color=occlen_and_timing)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#F02015","#FA900F",
+                                                  "#030ffc","#05f5ed")) + 
+                      labs(title="Max Spring EVI for ISIS Occupied Areas by Occupation Length and Timing",
+                           x = "Max EVI", y="Density", color="ISIS Occupation Length - Timing") + 
+                      theme_bw() 
+plt_max_occ_len_summer <- ggplot(filter(occlen_extremes_relig_filt,
+                                   season=='Summer'),
+                            aes(x=max_evi_scaled,color=occlen_and_timing)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#F02015","#FA900F",
+                                                  "#030ffc","#05f5ed")) + 
+                      labs(title="Max Summer EVI for ISIS Occupied Areas by Occupation Length and Timing",
+                           x = "Max EVI", y="Density", color="ISIS Occupation Length - Timing") + 
+                      theme_bw() 
+plt_max_occ_len_fall <- ggplot(filter(occlen_extremes_relig_filt,
+                                   season=='Fall'),
+                            aes(x=max_evi_scaled,color=occlen_and_timing)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#F02015","#FA900F",
+                                                  "#030ffc","#05f5ed")) + 
+                      labs(title="Max Fall EVI for ISIS Occupied Areas by Occupation Length and Timing",
+                           x = "Max EVI", y="Density", color="ISIS Occupation Length - Timing") + 
+                      theme_bw() 
+
+plt_max_occ_len_winter <- ggplot(filter(occlen_extremes_relig_filt,
+                                   season=='Winter'),
+                            aes(x=max_evi_scaled,color=occlen_and_timing)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#F02015","#FA900F",
+                                                  "#030ffc","#05f5ed")) + 
+                      labs(title="Max Winter EVI for ISIS Occupied Areas by Occupation Length and Timing",
+                           x = "Max EVI", y="Density", color="ISIS Occupation Length - Timing") + 
+                      theme_bw() 
+
+fin_plots <- arrangeGrob(plt_max_occ_len_spring,plt_max_occ_len_summer,plt_max_occ_len_fall,plt_max_occ_len_winter,nrow=2,
+             bottom=textGrob("ISIS Occupation Years Collected Manually based on IOM Occupation Reports; Long Occupation is >= 35 months, Short Occupation is <= 12 months"))
+
+
+img_file <- './data/data_visualizations/max_season_evi_dists_occlen.png'
+ggsave(img_file,fin_plots, width=24, height=10, dpi=400)
 ```
