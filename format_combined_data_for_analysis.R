@@ -109,7 +109,7 @@ spei_max_evi_lm <- lm(max_evi_scaled ~ mean_spei +
 seasonal_data[attr(spei_mean_evi_lm$residuals,which="name"),"mean_evi_resids"] <- spei_mean_evi_lm$residuals
 seasonal_data[attr(spei_max_evi_lm$residuals,which="name"),"max_evi_resids"] <- spei_max_evi_lm$residuals
 
-
+saveRDS(seasonal_data, 'seasonal_data.Rds')
 
 # get descriptive stats for categories
 seasonal_data |>
@@ -289,6 +289,8 @@ plant_timing_data[attr(spei_mean_evi_lm_plant$residuals,which="name"),"mean_evi_
 plant_timing_data[attr(spei_max_evi_lm_plant$residuals,which="name"),"max_evi_resids"] <- spei_max_evi_lm_plant$residuals
 
 
+
+saveRDS(plant_timing_data, 'plant_timing_data.Rds')
 
 # get descriptive stats for categories
 plant_timing_data |>
