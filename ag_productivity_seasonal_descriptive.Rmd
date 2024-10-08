@@ -1,0 +1,119 @@
+First, run the code in format_combined_data_for_analysis.R to get the dataframes used in this analysis. (sorry this is a bad way to do this..)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(gridExtra)
+library(grid)
+library(broom)
+library(sp)
+library(dplyr)
+```
+
+
+```{r occ length datasets}
+occlen_extremes_relig <- seasonal_data_productivity |>
+                     filter(!is.na(isis_occ_status)) |>
+                     mutate(sunni_status=ifelse(sunni_dom==1,'Sunni Dominated',
+                             ifelse(sunni_mix==1,'Sunni Mixed',
+                                    ifelse(no_sunni==1,'No Sunni Pop',
+                                           NA))),
+                            occ_len_cat = ifelse(occ_length_mon<=12, "Short",
+                                                 ifelse(occ_length_mon>=35,"Long",
+                                                        "Mid"))) |>
+                     mutate(occlen_and_relig = paste0(sunni_status," - ",occ_len_cat),
+                            occlen_and_timing = paste0(occ_len_cat, " - " ,isis_occ_status))
+
+occlen_extremes_relig_filt <- occlen_extremes_relig |>
+                                filter(occ_len_cat %in% c('Long','Short')) |>
+                                filter(isis_occ_status %in% c('Pre','Post'))
+
+
+occ_vs_noocc_relig <- seasonal_data_productivity |>
+                       mutate(sunni_status=ifelse(sunni_dom==1,'Sunni Dominated',
+                               ifelse(sunni_mix==1,'Sunni Mixed',
+                                      ifelse(no_sunni==1,'No Sunni Pop',
+                                             NA))),,
+                              occ_len_cat = ifelse(!is.na(isis_occ_status),
+                                                  ifelse(occ_length_mon<=12, "Short",
+                                                 ifelse(occ_length_mon>=35,"Long",
+                                                        "Mid")),NA),
+                              occ_status = ifelse(!is.na(isis_occ_status), "Occupied",
+                                                          "Not Occupied")) |>
+                              # isis_presence = ifelse(is.na(isis_occ_status),
+                              #                        ifelse(year_num <= 2013, 'Pre',
+                              #                         ifelse(year_num >= 2018, 'Post',
+                              #                        ifelse((year_num > 2013 & year_num < 2018), 'During',NA
+                              #                              ))),isis_occ_status)) |>
+                       mutate(occ_and_relig = paste0(sunni_status," - ",occ_status),
+                              occ_and_timing = paste0(occ_status, " - " ,isis_occ_status))
+
+
+occ_vs_noocc_relig_filt <- occ_vs_noocc_relig |>
+                            filter(isis_occ_status %in% c('Pre','Post'))
+
+```
+
+## Compare Occupation Lengths : Long vs Short
+
+```{r compare ag prod dists occ length}
+plt_occ_len_wheatbarley <- ggplot(filter(occlen_extremes_relig_filt,
+                                   plant_season=='WheatBarley'),
+                            aes(x=evi_prod_nat_divergence,color=occlen_and_timing)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#F02015","#FA900F","#f5ed02",
+                                                  "#030ffc","#0cbff5","#0cf5a3")) + 
+                      labs(title="Agricultural Productivity (Divergence from National Avg) for ISIS Occupied Areas by Occupation Length and Timing\nduring Wheat and Barley Growing Months",
+                           x = "Ag Productivity (Diff from National Mean)", y="Density", color="ISIS Occupation Length - Timing") + 
+                      theme_bw() 
+plt_occ_len_summer <- ggplot(filter(occlen_extremes_relig_filt,
+                                   plant_season=='SummerCrops'),
+                            aes(x=evi_prod_nat_divergence,color=occlen_and_timing)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#F02015","#FA900F","#f5ed02",
+                                                  "#030ffc","#0cbff5","#0cf5a3")) + 
+                      labs(title="Agricultural Productivity (Divergence from National Avg) for ISIS Occupied Areas by Occupation Length and Timing\nduring Summer Crop Growing Months",
+                           x = "Ag Productivity (Diff from National Mean)", y="Density", color="ISIS Occupation Length - Timing") + 
+                      theme_bw() 
+
+fin_plots <- arrangeGrob(plt_occ_len_wheatbarley,plt_occ_len_summer,nrow=1,
+             bottom=textGrob("ISIS Occupation Years Collected Manually based on IOM Occupation Reports; Long Occupation is >= 35 months, Short Occupation is <= 12 months; Wheat and Barley Growing Season is Dec - Apr, Summer is May - Sept.\nAgricultural productivity calculated as the mean EVI for the first 6 weeks of the growing season minus the max EVI for the entire growing season, following Asher 2020.\nNational mean of productivity calculated for each growing season and subtracted from ADM3 productivity to get divergence from national mean."))
+
+
+img_file <- './data/data_visualizations/plant_season_ag_prod_div_from_nat_dists_occlen.png'
+ggsave(img_file,fin_plots, width=24, height=10, dpi=400)
+```
+
+
+```{r compare ag prod relig status}
+plt_occ_rel_prod_wheatbarl <- ggplot(filter(occ_vs_noocc_relig,
+                                   plant_season=='WheatBarley'),
+                            aes(x=evi_prod_nat_divergence,color=occ_and_relig)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#290AC1","#0cbff5",
+                            "#26D176","#BFE515",
+                            "#FA900F","#F95E10","#F02015")) +  
+                      labs(title="Agricultural Productivity (Divergence from National Avg) for ISIS Occupied Areas by Occupation Timing and Sunni Status,\nWheat and Barley Growing Season",
+                           x = "Ag Productivity (Diff from National Mean)", y="Density", color="ISIS Occupation and Sunni Status") + 
+                      theme_bw() 
+plt_occ_rel_prod_summer <- ggplot(filter(occ_vs_noocc_relig,
+                                   plant_season=='SummerCrops'),
+                            aes(x=evi_prod_nat_divergence,color=occ_and_relig)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#290AC1","#0cbff5",
+                            "#26D176","#BFE515",
+                            "#FA900F","#F95E10","#F02015")) + 
+                      labs(title="Agricultural Productivity (Divergence from National Avg) for ISIS Occupied Areas by Occupation Timing and Sunni Status,\nSummer Crops Growing Season",
+                           x = "Ag Productivity (Diff from National Mean)", y="Density", color="ISIS Occupation and Sunni Status") + 
+                      theme_bw() 
+
+fin_plots <- arrangeGrob(plt_occ_rel_prod_wheatbarl,plt_occ_rel_prod_summer,nrow=1,
+             bottom=textGrob("ISIS Occupation Years Collected Manually based on IOM Occupation Reports; Long Occupation is >= 35 months, Short Occupation is <= 12 months; Wheat and Barley Growing Season is Dec - Apr, Summer is May - Sept.\nAgricultural productivity calculated as the mean EVI for the first 6 weeks of the growing season minus the max EVI for the entire growing season, following Asher 2020.\nNational mean of productivity calculated for each growing season and subtracted from ADM3 productivity to get divergence from national mean."))
+
+
+img_file <- './data/data_visualizations/plant_season_ag_prod_div_from_nat_dists_relig_occ.png'
+ggsave(img_file,fin_plots, width=24, height=10, dpi=400)
+
+```
+
+

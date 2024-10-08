@@ -18,7 +18,7 @@ library(dplyr)
 ```
 
 ```{r occ length datasets}
-occlen_extremes_relig <- plant_timing_data |>
+occlen_extremes_relig <- seasonal_data_productivity |>
                      filter(!is.na(isis_occ_status)) |>
                      mutate(sunni_status=ifelse(sunni_dom==1,'Sunni Dominated',
                              ifelse(sunni_mix==1,'Sunni Mixed',
@@ -35,7 +35,7 @@ occlen_extremes_relig_filt <- occlen_extremes_relig |>
                                 filter(isis_occ_status %in% c('Pre','Post'))
 
 
-occ_vs_noocc_relig <- plant_timing_data |>
+occ_vs_noocc_relig <- seasonal_data_productivity |>
                        mutate(sunni_status=ifelse(sunni_dom==1,'Sunni Dominated',
                                ifelse(sunni_mix==1,'Sunni Mixed',
                                       ifelse(no_sunni==1,'No Sunni Pop',
@@ -63,32 +63,62 @@ occ_vs_noocc_relig_filt <- occ_vs_noocc_relig |>
 ## Compare Occupation Lengths : Long vs Short
 
 ```{r compare mean evi dists occ length}
-plt_occ_len_wheatbarley <- ggplot(filter(occlen_extremes_relig_filt,
-                                   plant_season=='WheatBarley'),
-                            aes(x=mean_evi_scaled,color=occlen_and_timing)) + 
+plt_occ_len_spring <- ggplot(filter(occlen_extremes_relig_filt,
+                                   season=='Spring'),
+                            aes(x=evi_prod_scaled,color=occlen_and_timing)) + 
                       geom_density() + 
                       scale_color_manual(values=c("#F02015","#FA900F","#f5ed02",
                                                   "#030ffc","#0cbff5","#0cf5a3")) + 
-                      labs(title="Mean EVI for ISIS Occupied Areas by Occupation Length and Timing during Wheat and Barley Growing Months",
-                           x = "Mean EVI", y="Density", color="ISIS Occupation Length - Timing") + 
+                      labs(title="EVI Productivity (Max EVI - Mean EVI at Season Start) for ISIS Occupied Areas by Occupation Length and Timing during Spring",
+                           x = "EVI Productivity", y="Density", color="ISIS Occupation Length - Timing") + 
+                      theme_bw() 
+plt_occ_len_summer <- ggplot(filter(occlen_extremes_relig_filt,
+                                   season=='Summer'),
+                            aes(x=evi_prod_scaled,color=occlen_and_timing)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#F02015","#FA900F","#f5ed02",
+                                                  "#030ffc","#0cbff5","#0cf5a3")) + 
+                      labs(title="EVI Productivity (Max EVI - Mean EVI at Season Start) for ISIS Occupied Areas by Occupation Length and Timing",
+                           x = "EVI Productivity", y="Density", color="ISIS Occupation Length - Timing") + 
+                      theme_bw() 
+
+fin_plots <- arrangeGrob(plt_occ_len_spring,plt_occ_len_summer,nrow=1,
+             bottom=textGrob("ISIS Occupation Years Collected Manually based on IOM Occupation Reports; Long Occupation is >= 35 months, Short Occupation is <= 12 months; Wheat and Barley Growing Season is Dec - Apr, Summer is May - Sept"))
+
+
+img_file <- './data/data_visualizations/mean_plant_season_evi_productivity_dists_occlen.png'
+ggsave(img_file,fin_plots, width=24, height=10, dpi=400)
+```
+
+
+```{r compare mean evi dists occ length}
+plt_occ_len_wheatbarley <- ggplot(filter(occlen_extremes_relig_filt,
+                                   plant_season=='WheatBarley'),
+                            aes(x=mean_ndvi_scaled,color=occlen_and_timing)) + 
+                      geom_density() + 
+                      scale_color_manual(values=c("#F02015","#FA900F","#f5ed02",
+                                                  "#030ffc","#0cbff5","#0cf5a3")) + 
+                      labs(title="Mean NDVI for ISIS Occupied Areas by Occupation Length and Timing during Wheat and Barley Growing Months",
+                           x = "Mean NDVI", y="Density", color="ISIS Occupation Length - Timing") + 
                       theme_bw() 
 plt_occ_len_summer <- ggplot(filter(occlen_extremes_relig_filt,
                                    plant_season=='SummerCrops'),
-                            aes(x=mean_evi_scaled,color=occlen_and_timing)) + 
+                            aes(x=mean_ndvi_scaled,color=occlen_and_timing)) + 
                       geom_density() + 
                       scale_color_manual(values=c("#F02015","#FA900F","#f5ed02",
                                                   "#030ffc","#0cbff5","#0cf5a3")) + 
-                      labs(title="Mean Summer EVI for ISIS Occupied Areas by Occupation Length and Timing",
-                           x = "Mean EVI", y="Density", color="ISIS Occupation Length - Timing") + 
+                      labs(title="Mean Summer NDVI for ISIS Occupied Areas by Occupation Length and Timing",
+                           x = "Mean NDVI", y="Density", color="ISIS Occupation Length - Timing") + 
                       theme_bw() 
 
 fin_plots <- arrangeGrob(plt_occ_len_wheatbarley,plt_occ_len_summer,nrow=1,
              bottom=textGrob("ISIS Occupation Years Collected Manually based on IOM Occupation Reports; Long Occupation is >= 35 months, Short Occupation is <= 12 months; Wheat and Barley Growing Season is Dec - Apr, Summer is May - Sept"))
 
 
-img_file <- './data/data_visualizations/mean_plant_season_evi_dists_occlen.png'
+img_file <- './data/data_visualizations/mean_plant_season_ndvi_dists_occlen.png'
 ggsave(img_file,fin_plots, width=24, height=10, dpi=400)
 ```
+
 
 ```{r compare mean resid evi dists occ length}
 plt_resid_occ_len_wheatbarley <- ggplot(filter(occlen_extremes_relig_filt,
