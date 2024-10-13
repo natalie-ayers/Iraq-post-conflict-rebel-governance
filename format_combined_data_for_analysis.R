@@ -12,10 +12,24 @@ combined_monthly_data_geo <- geojson_read('data/combined/monthly_adm3_data.geojs
 monthly_data_sel <- combined_monthly_data |>
                       select(-c('ADM2_EN','ADM2_AR','ADM2_PCODE',
                                 'ADM1_EN','ADM1_AR','ADM1_PCODE',
-                                'ADM3_AR','ADM3_PCODE','isil_ingroup_prior',
-                                'isil_ingroup_curr','mean_evi_mask',
+                                'ADM3_AR','ADM3_PCODE','iom_isil_ingroup_prior',
+                                'iom_isil_ingroup_curr','mean_evi_mask',
                                 'max_evi_mask','mean_evi_nomask','max_evi_nomask',
                                 'ACTION_PRT','ACTION_IND', 'ACTION_DIR'))
+
+# calculate liveuamap occupation fields
+liveuamap_terr <- monthly_data_sel |>
+                    select(c('ADM3_EN','month','perc_isis_control')) |>
+                    group_by(ADM3_EN) |>
+                    summarize(max_isis_perc_control=max(perc_isis_control,
+                                                   na.rm=TRUE)) |>
+                    ungroup() |>
+                    mutate(max_isis_perc_control = ifelse(max_isis_perc_control=='-Inf',0,max_isis_perc_control))
+
+
+
+
+
 
 # include spei to allow for residual calculations
 spei <- read.csv('data/drought/gebrechorkos_etal_2023_spei/spei_sums/CHIRPS_GLEAM_06_spei_sums.csv')
