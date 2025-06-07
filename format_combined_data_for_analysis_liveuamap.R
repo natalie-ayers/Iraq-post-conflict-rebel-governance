@@ -16,7 +16,7 @@ combined_monthly_data_geo <- geojson_read('data/combined/monthly_adm3_data.geojs
 # remove fields that are currently unnecessary
 monthly_data_sel <- combined_monthly_data |>
                       select(-c('ADM2_EN','ADM2_AR','ADM2_PCODE',
-                                'ADM1_EN','ADM1_AR','ADM1_PCODE',
+                                'ADM1_AR','ADM1_PCODE',
                                 'ADM3_AR','ADM3_PCODE','iom_isil_ingroup_prior',
                                 'iom_isil_ingroup_curr','mean_evi_mask',
                                 'max_evi_mask','mean_evi_nomask','max_evi_nomask',
@@ -29,8 +29,8 @@ liveuamap_any_control <- monthly_data_sel |>
                     summarize(max_isis_perc_control=max(perc_isis_control,
                                                    na.rm=TRUE)) |>
                     ungroup() |>
-                    mutate(max_isis_perc_control = ifelse(max_isis_perc_control=='-Inf',0,max_isis_perc_control)) |>
-                    mutate(ever_isis_controlled = ifelse(max_isis_perc_control >= CONTROL_AREA_PERC_THRESHOLD,1,0))
+                    mutate(max_isis_perc_control_lm = ifelse(max_isis_perc_control=='-Inf',0,max_isis_perc_control)) |>
+                    mutate(ever_isis_controlled_lm = ifelse(max_isis_perc_control >= CONTROL_AREA_PERC_THRESHOLD,1,0))
 
 monthly_data_sel <- monthly_data_sel |>
                       # add in flag for the maximum percent land ISIS held for each adm3 area
@@ -40,21 +40,22 @@ monthly_data_sel <- monthly_data_sel |>
                       # according to liveuamap
                       mutate(curr_isis_control_lm = ifelse(perc_isis_control >= CONTROL_AREA_PERC_THRESHOLD, 1, 0))
 
+
+
 liveuamap_control_dates <- monthly_data_sel |>
-                                # use 25% as our cut-off for "occupied"
                                 filter(curr_isis_control_lm == 1) |>
                                 select(c('ADM3_EN','month')) |>
                                 group_by(ADM3_EN) |>
                                 # get min and max dates of being under ISIS control
-                                summarize(min_isis_cntrl_date=min(month),
-                                          max_isis_cntrl_date=max(month)) |>
+                                summarize(min_isis_cntrl_date_lm=min(month),
+                                          max_isis_cntrl_date_lm=max(month)) |>
                                 # get the length of time between the start of the first occupation
                                 # and the end of the last occupation (potentially spans multiple
                                 # occs if area was in and out of occupation)
-                                mutate(full_occ_dur_mon = (interval(min_isis_cntrl_date,max_isis_cntrl_date) %/% months(1)))
+                                mutate(full_occ_dur_mon_lm = (interval(min_isis_cntrl_date_lm,max_isis_cntrl_date_lm) %/% months(1)))
 
 
-
+# add liveuamap control dates to the monthly data
 monthly_data_sel <- monthly_data_sel |>
                       merge(liveuamap_control_dates,by=c("ADM3_EN"),
                             all=TRUE)
@@ -128,21 +129,21 @@ seasonstart_evi_nomask |>
 seasonal_data_productivity_init <- monthly_data_sel |>
   select(-c(mean_evi_mask_scaled,max_evi_mask_scaled)) |>
   mutate(month=as.Date(month),
-         max_isis_cntrl_date=as.Date(max_isis_cntrl_date),
-         min_isis_cntrl_date=as.Date(min_isis_cntrl_date)) |>
+         max_isis_cntrl_date_lm=as.Date(max_isis_cntrl_date_lm),
+         min_isis_cntrl_date_lm=as.Date(min_isis_cntrl_date_lm)) |>
   merge(spei,by.x=c('month','ADM3_EN'),
         by.y=c('time','ADM3_EN'),
         all.x=TRUE) |>
-  mutate(occ_status_lm=ifelse(ever_isis_controlled==1,
-                                ifelse(month<min_isis_cntrl_date,'Pre',
-                                       ifelse(month>=min_isis_cntrl_date&month<=max_isis_cntrl_date,'During',
-                                              ifelse(month>max_isis_cntrl_date,'Post',NA))),NA),
+  mutate(occ_status_lm=ifelse(ever_isis_controlled_lm==1,
+                                ifelse(month<min_isis_cntrl_date_lm,'Pre',
+                                       ifelse(month>=min_isis_cntrl_date_lm&month<=max_isis_cntrl_date_lm,'During',
+                                              ifelse(month>max_isis_cntrl_date_lm,'Post',NA))),NA),
          month_num=month(month),
          year_num=year(month),
-         retaken_year=year(max_isis_cntrl_date),
-         occ_start_year=year(min_isis_cntrl_date)) |>
+         retaken_year_lm=year(max_isis_cntrl_date_lm),
+         occ_start_year_lm=year(min_isis_cntrl_date_lm)) |>
 
-  mutate(retaken_post_2016=ifelse(retaken_year>2016,1,0),
+  mutate(retaken_post_2016_lm=ifelse(retaken_year_lm>2016,1,0),
          plant_season=ifelse(month_num %in% c(12,1,2,3,4),
                              'WheatBarley',
                              ifelse(month_num %in% c(5,6,7,8,9),
@@ -162,6 +163,7 @@ seasonal_data_productivity_init |>
   distinct() |>
   nrow()
 
+# also 21462 rows
 testing <- seasonal_data_productivity_init |>
   select(c(plant_season_year, ADM3_EN)) |>
   distinct()
@@ -177,24 +179,39 @@ seasonal_data_productivity_init |>
   arrange(n_seasons)
 
 
-# now, calculate combat events, drought measures, and eviii by season
+# now, calculate combat events, drought measures, and evi by season
 seasonal_data_productivity <- seasonal_data_productivity_init |>
-  group_by(plant_season_year,ADM3_EN,plant_season,
-           ever_isis_controlled,
-           retaken_year,retaken_post_2016,occ_start_year,
-           full_occ_dur_mon,
+  group_by(plant_season_year,ADM3_EN,Shape_Area,ADM1_EN,plant_season,
+           ever_isis_controlled_lm,
+           retaken_year_lm,retaken_post_2016_lm,occ_start_year_lm,
+           full_occ_dur_mon_lm,
            sunni_dom,sunni_mix,no_sunni) |>
   summarise(max_evi_nomask_scaled=max(max_evi_nomask_scaled,
                                       na.rm=TRUE),
-            ucdp_nonisis_events_adm1prec = sum(ucdp_nonisis_events_adm1prec,na.rm=TRUE),
-            ucdp_isis_events_adm1prec = sum(ucdp_isis_events_adm1prec,na.rm=TRUE),
+            ucdp_nonisis_nonciv_events_adm1prec = sum(ucdp_nonisis_nonciv_events_adm1prec,na.rm=TRUE),
+            ucdp_nonisis_civ_events_adm1prec = sum(ucdp_nonisis_civ_events_adm1prec,na.rm=TRUE),
+            ucdp_isis_nonciv_events_adm1prec = sum(ucdp_isis_nonciv_events_adm1prec,na.rm=TRUE),
+            ucdp_isis_civ_events_adm1prec = sum(ucdp_isis_civ_events_adm1prec,na.rm=TRUE),
+            ucdp_all_isis_events_adm1prec = sum(ucdp_all_isis_events_adm1prec,na.rm=TRUE),
+            ucdp_all_civ_events_adm1prec = sum(ucdp_all_civ_events_adm1prec,na.rm=TRUE),
             ucdp_all_events_adm1prec = sum(ucdp_all_events_adm1prec,na.rm=TRUE),
-            ucdp_nonisis_events_adm2prec = sum(ucdp_nonisis_events_adm2prec,na.rm=TRUE),
-            ucdp_isis_events_adm2prec = sum(ucdp_isis_events_adm2prec,na.rm=TRUE),
+
+            ucdp_nonisis_nonciv_events_adm2prec = sum(ucdp_nonisis_nonciv_events_adm2prec,na.rm=TRUE),
+            ucdp_nonisis_civ_events_adm2prec = sum(ucdp_nonisis_civ_events_adm2prec,na.rm=TRUE),
+            ucdp_isis_nonciv_events_adm2prec = sum(ucdp_isis_nonciv_events_adm2prec,na.rm=TRUE),
+            ucdp_isis_civ_events_adm2prec = sum(ucdp_isis_civ_events_adm2prec,na.rm=TRUE),
+            ucdp_all_isis_events_adm2prec = sum(ucdp_all_isis_events_adm2prec,na.rm=TRUE),
+            ucdp_all_civ_events_adm2prec = sum(ucdp_all_civ_events_adm2prec,na.rm=TRUE),
             ucdp_all_events_adm2prec = sum(ucdp_all_events_adm2prec,na.rm=TRUE),
-            ucdp_nonisis_events_adm3prec = sum(ucdp_nonisis_events_adm3prec,na.rm=TRUE),
-            ucdp_isis_events_adm3prec = sum(ucdp_isis_events_adm3prec,na.rm=TRUE),
+
+            ucdp_nonisis_nonciv_events_adm3prec = sum(ucdp_nonisis_nonciv_events_adm3prec,na.rm=TRUE),
+            ucdp_nonisis_civ_events_adm3prec = sum(ucdp_nonisis_civ_events_adm3prec,na.rm=TRUE),
+            ucdp_isis_nonciv_events_adm3prec = sum(ucdp_isis_nonciv_events_adm3prec,na.rm=TRUE),
+            ucdp_isis_civ_events_adm3prec = sum(ucdp_isis_civ_events_adm3prec,na.rm=TRUE),
+            ucdp_all_isis_events_adm3prec = sum(ucdp_all_isis_events_adm3prec,na.rm=TRUE),
+            ucdp_all_civ_events_adm3prec = sum(ucdp_all_civ_events_adm3prec,na.rm=TRUE),
             ucdp_all_events_adm3prec = sum(ucdp_all_events_adm3prec,na.rm=TRUE),
+
             mean_spei=mean(mean_spei),
             max_spei=max(max_spei),
             min_spei=min(min_spei),
@@ -204,9 +221,12 @@ seasonal_data_productivity <- seasonal_data_productivity_init |>
             pop_count=mean(pop_count),
             pop_density=mean(pop_density),
             perc_drought_points=mean(perc_drought_points),
-            isis_occ_season=max(curr_isis_control_lm),
+            isis_occ_season_lm=max(curr_isis_control_lm),
             occ_status_lm = paste(occ_status_lm, collapse="-")) |>
   ungroup() |>
+  mutate(mean_spei = ifelse(mean_spei=='-Inf|Inf',NA,mean_spei),
+         max_spei = ifelse(max_spei=='-Inf|Inf',NA,max_spei),
+         min_spei = ifelse(min_spei=='-Inf|Inf',NA,min_spei)) |>
   merge(seasonstart_evi_nomask,
         by=c('plant_season_year','ADM3_EN','plant_season'),
         all=TRUE) |>
@@ -230,12 +250,24 @@ national_annual_plantseason_productivity <- seasonal_data_productivity |>
                                               summarize(national_evi_prod_scaled=mean(evi_prod_scaled)) |>
                                               ungroup()
 
+adm1_annual_plantseason_productivity <- seasonal_data_productivity |>
+                                          filter(plant_season!="NonGrowing") |>
+                                          select(c(plant_season_year,ADM1_EN,evi_prod_scaled)) |>
+                                          group_by(plant_season_year,ADM1_EN) |>
+                                          summarize(adm1_evi_prod_scaled=mean(evi_prod_scaled)) |>
+                                          ungroup()
+
+
 
 seasonal_data_productivity <- seasonal_data_productivity |>
                                   merge(national_annual_plantseason_productivity,
                                         by='plant_season_year',
                                         all=TRUE) |>
-                                  mutate(evi_prod_nat_divergence= evi_prod_scaled - national_evi_prod_scaled)
+                                  merge(adm1_annual_plantseason_productivity,
+                                        by=c('plant_season_year','ADM1_EN'),
+                                        all=TRUE) |>
+                                  mutate(evi_prod_nat_divergence= evi_prod_scaled - national_evi_prod_scaled,
+                                         evi_prod_adm1_divergence=evi_prod_scaled - adm1_evi_prod_scaled)
 
 
 
